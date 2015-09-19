@@ -2,25 +2,38 @@ module StoryContent where
 
 import InteractiveStory.StoryBlock exposing (..)
 import Either exposing (..)
-import InteractiveStory.Trigger exposing (autoProgressAfter)
+import InteractiveStory.Trigger exposing (autoProgressAfter, domdom, performActionAfter)
+import InteractiveStory.Action exposing (..)
 
-newBlock = { content = Either.Left "", classList = [], triggers = [], stallProgression = 0, label = Nothing }
+import Debug
+
+newBlock = { content = "", variableEdits = [], triggers = [], disableProgression = False, label = Nothing, animationState = Nothing }
 cBlock = { queryText = "",
           choices   = [],
-          classList = [],
+          variableEdits = [],
           triggers  = [],
           label     = Nothing,
-          selection = 0
+          selection = Nothing, animationState = Nothing
         }
 
-first = ContentBlock { newBlock | content <- Left "Hi there, this is slide 1!", label <- Just "first" }
+
 
 stuff = [
-    ContentBlock { newBlock | content <- Left "Hi there slide 1, I'm slide 2!", triggers <- [Left <| autoProgressAfter 1000] },
-    ContentBlock { newBlock | content <- Left "Slide THREE barging IN!" },
-    ChoiceBlock { cBlock | queryText <- "Uhh... I'm 4. People scare me so please talk to someone else...",
-                           choices <- [{ queryText = "Talk to 5", jumpToLabel = "five" }, { queryText = "Talk to 1", jumpToLabel = "first" }]
+    LogicBlock { label = Nothing, run = \_ -> [EditVar (SetString "atOne" "sure am!") True]  },
+    ContentBlock { newBlock |
+        content <- "{{ding}} {{ding}} {{ding}}Hi there, this is slide 1 {{okay}}! {{doobly}}. This is all {{atOne}}",
+        label <- Just "first" ,
+        triggers <- [Left <| autoProgressAfter 600],
+        variableEdits <- [(SetString "doobly" "Big jim bob"), SetString "okay" "dokay"]
+      },
+    ContentBlock { newBlock | content <- "Hi there slide 1, I'm slide 2! Count {{ding}} and {{doobly}}", triggers <- [Left <| autoProgressAfter 600] },
+    ContentBlock { newBlock | content <- "Slide THREE barging IN with a {{ding}}!", triggers <- [Left <| autoProgressAfter 600] },
+     ChoiceBlock { cBlock | queryText <- "Uhh... I'm 4. People scare me so please talk to someone else...",
+                           choices <- [{ queryText = "Talk to 5 - {{ding}}", jumpToLabel = "five", variableEdits = [(SetString "at-five" "600")], triggerLiveVarUpdate = False },
+                                      { queryText = "Talk to 1", jumpToLabel = "first", variableEdits = [SetBool "atOne" True, (UpdateNum "ding" (\n -> Maybe.withDefault -1 n |> (+) 1 |> Just))], triggerLiveVarUpdate = False }]
                 },
-    ContentBlock { newBlock | content <- Left "Ugh, *yawn* what time is it? Too _early_. I'm 5, k? Night.", label <- Just "five" }
+    ContentBlock { newBlock | content <- "Ugh, *yawn* what time is it? Too _early_. I'm {{at-five}}5, k? Night.", label <- Just "five", triggers <- [Left <| autoProgressAfter 600] },
+    LogicBlock { label = Nothing, run = \_ -> [ JumpToLabel "first" ] },
+    EndBlock { label = Nothing, triggers = [], animationState = Nothing }
     ]
 
