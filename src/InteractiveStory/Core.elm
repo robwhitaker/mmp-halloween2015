@@ -34,6 +34,7 @@ import Regex
 import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer)
 
 import Animation exposing (Animation)
+import AnimationWrapper as AW
 
 import Html.Events.Extra exposing (ScrollEvent)
 
@@ -52,7 +53,7 @@ type alias Model = {
     windowHeight         : Int,
     windowWidth          : Int,
     scrollData           : ScrollEvent,
-    scrollAnimation      : AnimationState,
+    scrollAnimation      : AW.AnimationWrapper,
     chunkSize            : Int,
     visibleChunks        : Int,
     chunkingThreshold    : Int
@@ -75,7 +76,7 @@ init inputList =
         , windowWidth = 0
         , windowHeight = 0
         , scrollData = { scrollTop = 0, scrollLeft = 0, scrollWidth = 0, scrollHeight = 0, clientWidth = 0, clientHeight = 0 }
-        , scrollAnimation = { prevClockTime = 0, elapsedTime = 0, animation = Animation.static 0 }
+        , scrollAnimation = AW.empty
         , chunkSize = 10
         , visibleChunks = 0
         , chunkingThreshold = 5
@@ -126,7 +127,7 @@ update action model =
 
         StoryBlockAction sbAction ->
             let (newInstanceBlock, newEffects) = SB.update sbAction model.currentBlockInstance
-            in ({ model | currentBlockInstance <- newInstanceBlock }, newEffects)
+            in ({ model | currentBlockInstance <- newInstanceBlock }, Effects.map StoryBlockAction newEffects)
 
         WindowResize (width, height) ->
             ({ model | windowHeight <- height, windowWidth <- width }, Effects.none)
@@ -146,36 +147,25 @@ update action model =
                 ({ model | scrollData <- scrollEvent, visibleChunks <- newVisibleChunks }, Effects.none)
 
         AnimateScroll animation ->
-            if Animation.isDone model.scrollAnimation.elapsedTime model.scrollAnimation.animation
-            then
-                ({ model |
-                    scrollAnimation <- { prevClockTime = -1, elapsedTime = 0, animation = animation }
-                }, Effects.tick Tick)
-            else (model, Effects.none)
+            let (newScrollAnimation, newEffects) = AW.update (AW.Start animation) AW.empty
+            in
+                (,)
+                    { model | scrollAnimation <- newScrollAnimation }
+                    (Effects.map ScrollTick newEffects)
 
-        Tick clockTime ->
-            if Animation.isDone model.scrollAnimation.elapsedTime model.scrollAnimation.animation
-            then (model, Effects.none)
-            else
-                let
-                    currentScrollAnimation = model.scrollAnimation
-                    newScrollAnimation =
-                        if model.scrollAnimation.prevClockTime < 0
-                        then { currentScrollAnimation | prevClockTime <- clockTime }
-                        else
-                            { currentScrollAnimation |
-                                prevClockTime <- clockTime,
-                                elapsedTime <- currentScrollAnimation.elapsedTime + (clockTime - currentScrollAnimation.prevClockTime)
-                            }
-                    scrollEffect =
+        ScrollTick scrollAnimAction ->
+            let (newScrollAnimation, newEffects) = AW.update scrollAnimAction model.scrollAnimation
+                scrollEffect =
                         DOMInterface.scrollElementTo
-                            (0, round <| Animation.animate newScrollAnimation.elapsedTime newScrollAnimation.animation)
+                            (0, round <| AW.value newScrollAnimation)
                             ".interactive-story-container" 0
                         |> Task.toMaybe
                         |> Task.map (always NoOp)
                         |> Effects.task
-
-                in ({ model | scrollAnimation <- newScrollAnimation }, Effects.batch [scrollEffect, Effects.tick Tick])
+            in
+                (,)
+                    { model | scrollAnimation <- newScrollAnimation }
+                    ( Effects.batch [scrollEffect, Effects.map ScrollTick newEffects] )
 
         ApplyChunking height ->
             let newChunk = { height = height, blocks = List.take model.chunkSize model.blockHistory }
@@ -231,7 +221,7 @@ animateBlockIn (model, effects) =
         LogicBlock _ -> (model, effects)
         _            ->
             let (newStoryBlock, effects') = SB.update SBAction.AnimateIn model.currentBlockInstance
-            in ({ model | currentBlockInstance <- newStoryBlock }, Effects.batch [effects, effects'])
+            in ({ model | currentBlockInstance <- newStoryBlock }, Effects.batch [effects, Effects.map StoryBlockAction effects'])
 
 removeRepeatBlocks : Model -> (Model, Effects Action) -> (Model, Effects Action)
 removeRepeatBlocks oldModel (newModel, effects) =
@@ -341,8 +331,8 @@ applyChunking (model, effects) =
     let threshold = model.chunkingThreshold
         chunkSize = model.chunkSize
         chunkItUp =
-            (DOMInterface.getElementPositionInfo ".story-block" 1
-            `andThen` \startElem -> DOMInterface.getElementPositionInfo ".story-block" chunkSize
+            (DOMInterface.getElementPositionInfo ".story-block" 0
+            `andThen` \startElem -> DOMInterface.getElementPositionInfo ".story-block" (chunkSize-1)
             `andThen` \lastElem -> Task.succeed (lastElem.top + lastElem.height - startElem.top))
             |> Task.toMaybe
             |> Task.map (Maybe.map ApplyChunking)

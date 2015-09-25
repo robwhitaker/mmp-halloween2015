@@ -19,6 +19,7 @@ import InteractiveStory.StoryBlockAction as SBAction
 import InteractiveStory.Styles.Core exposing (storyBlock, animateIn, storyBlockAnimation)
 
 import Animation
+import AnimationWrapper as AW
 
 
 import Debug
@@ -35,7 +36,7 @@ type StoryBlock
         , triggers           : List Trigger
         , disableProgression : Bool
         , label              : Maybe String
-        , animationState     : Maybe AnimationState
+        , animationState     : AW.AnimationWrapper
         }
     | ChoiceBlock
         { queryText          : String
@@ -44,7 +45,7 @@ type StoryBlock
         , triggers           : List Trigger
         , label              : Maybe String
         , selection          : Maybe Int
-        , animationState     : Maybe AnimationState
+        , animationState     : AW.AnimationWrapper
         }
     | CustomBlock
         { contentGenerator   : VariableModel -> Signal.Address Action -> Bool -> Html
@@ -53,7 +54,7 @@ type StoryBlock
         , triggers           : List Trigger
         , disableProgression : Bool
         , label              : Maybe String
-        , animationState     : Maybe AnimationState
+        , animationState     : AW.AnimationWrapper
         }
     | LogicBlock
         { run                : VariableModel -> List Action
@@ -62,7 +63,7 @@ type StoryBlock
     | EndBlock
         { label              : Maybe String
         , triggers           : List Trigger
-        , animationState     : Maybe AnimationState
+        , animationState     : AW.AnimationWrapper
         }
 
 type alias Choice =
@@ -93,14 +94,14 @@ getTriggers storyBlock =
         EndBlock     { triggers } -> triggers
         _ -> []
 
-getAnimationState : StoryBlock -> Maybe AnimationState
+getAnimationState : StoryBlock -> AW.AnimationWrapper
 getAnimationState storyBlock =
     case storyBlock of
         ContentBlock { animationState } -> animationState
         ChoiceBlock  { animationState } -> animationState
         CustomBlock  { animationState } -> animationState
         EndBlock     { animationState } -> animationState
-        _ -> Nothing
+        _ -> AW.empty
 
 getDisableProgression : StoryBlock -> Bool
 getDisableProgression storyBlock =
@@ -125,23 +126,19 @@ mapDisableProgression f storyBlock =
         _ -> storyBlock
 
 animationInProgress : StoryBlock -> Bool
-animationInProgress storyBlock =
-    case getAnimationState storyBlock of
-        Nothing -> False
-        Just animationState ->
-            Animation.isRunning animationState.elapsedTime storyBlockAnimation
+animationInProgress = getAnimationState >> AW.isDone >> not
 
 ---- DEFAULT MODELS ----
 
 initialStoryBlock : StoryBlock
-initialStoryBlock = ContentBlock { content = "", variableEdits = [], triggers = [], disableProgression = False, label = Nothing, animationState = Nothing }
+initialStoryBlock = ContentBlock { content = "", variableEdits = [], triggers = [], disableProgression = False, label = Nothing, animationState = AW.empty }
 
 emptyBlock : StoryBlock
 emptyBlock = LogicBlock { run = always [], label = Nothing }
 
 ---- STORYBLOCK UPDATE ----
 
-update : SBAction.Action -> StoryBlock -> (StoryBlock, Effects Action)
+update : SBAction.Action -> StoryBlock -> (StoryBlock, Effects SBAction.Action)
 update action storyBlock =
     case action of
         SBAction.ChoiceSelect newSelection ->
@@ -154,35 +151,29 @@ update action storyBlock =
             case storyBlock of
                 LogicBlock _ -> (storyBlock, Effects.none)
                 _ ->
-                    case getAnimationState storyBlock of
-                        Nothing -> ( storyBlock, Effects.tick (StoryBlockAction << SBAction.Tick) )
-                        Just _ -> ( storyBlock, Effects.none )
+                    let
+                        (newAnimationState, newEffects) = AW.update (AW.Start storyBlockAnimation) (getAnimationState storyBlock)
+                        newEffects' = Effects.map (SBAction.Tick) newEffects
+                    in
+                        case storyBlock of
+                            ContentBlock block -> (ContentBlock { block | animationState <- newAnimationState }, newEffects')
+                            ChoiceBlock  block -> (ChoiceBlock { block | animationState <- newAnimationState }, newEffects')
+                            CustomBlock  block -> (CustomBlock { block | animationState <- newAnimationState }, newEffects')
+                            EndBlock     block -> (EndBlock { block | animationState <- newAnimationState }, newEffects')
 
-
-        SBAction.Tick clockTime ->
+        SBAction.Tick awaction ->
             case storyBlock of
                 LogicBlock _ -> (storyBlock, Effects.none)
                 _ ->
-                    let (newAnimationState, newEffects) =
-                        case getAnimationState storyBlock of
-                            Nothing ->
-                                let
-                                    newAnimationState = { prevClockTime = clockTime, elapsedTime = 0 }
-                                in (Just newAnimationState, Effects.tick (StoryBlockAction << SBAction.Tick))
-                            Just { elapsedTime, prevClockTime } ->
-                                let
-                                    newElapsedTime = elapsedTime + (clockTime - prevClockTime)
-                                    newAnimationState = { prevClockTime = clockTime, elapsedTime = newElapsedTime }
-                                in
-                                    if Animation.isDone newElapsedTime storyBlockAnimation
-                                    then (Just newAnimationState, Effects.none)
-                                    else (Just newAnimationState, Effects.tick (StoryBlockAction << SBAction.Tick))
+                    let
+                        (newAnimationState, newEffects) = AW.update awaction (getAnimationState storyBlock)
+                        newEffects' = Effects.map (SBAction.Tick) newEffects
                     in
                         case storyBlock of
-                            ContentBlock block -> (ContentBlock { block | animationState <- newAnimationState }, newEffects)
-                            ChoiceBlock  block -> (ChoiceBlock { block | animationState <- newAnimationState }, newEffects)
-                            CustomBlock  block -> (CustomBlock { block | animationState <- newAnimationState }, newEffects)
-                            EndBlock     block -> (EndBlock { block | animationState <- newAnimationState }, newEffects)
+                            ContentBlock block -> (ContentBlock { block | animationState <- newAnimationState }, newEffects')
+                            ChoiceBlock  block -> (ChoiceBlock { block | animationState <- newAnimationState }, newEffects')
+                            CustomBlock  block -> (CustomBlock { block | animationState <- newAnimationState }, newEffects')
+                            EndBlock     block -> (EndBlock { block | animationState <- newAnimationState }, newEffects')
 
 
 
@@ -192,7 +183,7 @@ update action storyBlock =
 
 render : Signal.Address Action -> Bool -> StoryBlock -> Html
 render address isActive block =
-    let animationTime = (Maybe.withDefault { prevClockTime = 0, elapsedTime = 0 } <| getAnimationState block) |> .elapsedTime
+    let animationTime = AW.query always <| getAnimationState block
     in
         case block of
             ContentBlock { content } ->

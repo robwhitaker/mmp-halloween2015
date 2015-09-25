@@ -4,16 +4,16 @@ import InteractiveStory.StoryBlock exposing (..)
 import Either exposing (..)
 import InteractiveStory.Trigger exposing (autoProgressAfter, domdom, performActionAfter)
 import InteractiveStory.Action exposing (..)
-
+import AnimationWrapper as AW
 import Debug
 
-newBlock = { content = "", variableEdits = [], triggers = [], disableProgression = False, label = Nothing, animationState = Nothing }
+newBlock = { content = "", variableEdits = [], triggers = [], disableProgression = False, label = Nothing, animationState = AW.empty }
 cBlock = { queryText = "",
           choices   = [],
           variableEdits = [],
           triggers  = [],
           label     = Nothing,
-          selection = Nothing, animationState = Nothing
+          selection = Nothing, animationState = AW.empty
         }
 
 
@@ -34,6 +34,6 @@ stuff = [
                 },
     ContentBlock { newBlock | content <- "Ugh, *yawn* what time is it? Too _early_. I'm {{at-five}}5, k? Night.", label <- Just "five", triggers <- [Left <| autoProgressAfter 600] },
     LogicBlock { label = Nothing, run = \_ -> [ JumpToLabel "first" ] },
-    EndBlock { label = Nothing, triggers = [], animationState = Nothing }
+    EndBlock { label = Nothing, triggers = [], animationState = AW.empty }
     ]
 

@@ -4,6 +4,7 @@ import InteractiveStory.StoryBlockAction as SBAction
 import Html.Events.Extra exposing (ScrollEvent)
 import Animation exposing (Animation)
 import Time exposing (Time)
+import AnimationWrapper as AW
 
 ---- ACTION MODEL ----
 
@@ -19,7 +20,7 @@ type Action
     | UserScroll ScrollEvent
     | AnimateScroll Animation
     | ApplyChunking Float
-    | Tick Time
+    | ScrollTick AW.Action
     | NoOp
 
 type VarAction
