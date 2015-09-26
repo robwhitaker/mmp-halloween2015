@@ -6,3 +6,4 @@ type Action
     = AnimateIn
     | Tick AW.Action
     | ChoiceSelect (Maybe Int)
+    | ChoiceConfirm

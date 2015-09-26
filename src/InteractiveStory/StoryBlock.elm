@@ -16,7 +16,7 @@ import InteractiveStory.Trigger exposing (TriggerBuilder)
 import InteractiveStory.VariableModel exposing (VariableModel)
 import InteractiveStory.StoryBlockAction as SBAction
 
-import InteractiveStory.Styles.Core exposing (storyBlock, animateIn, storyBlockAnimation)
+import InteractiveStory.Styles.Core exposing (storyBlock, animateIn, storyBlockAnimation, choiceBlockChoice)
 
 import Animation
 import AnimationWrapper as AW
@@ -45,6 +45,7 @@ type StoryBlock
         , triggers           : List Trigger
         , label              : Maybe String
         , selection          : Maybe Int
+        , selectionLocked    : Bool
         , animationState     : AW.AnimationWrapper
         }
     | CustomBlock
@@ -147,6 +148,12 @@ update action storyBlock =
                     (ChoiceBlock { block | selection <- newSelection }, Effects.none)
                 _ -> (storyBlock, Effects.none)
 
+        SBAction.ChoiceConfirm ->
+            case storyBlock of
+                ChoiceBlock block ->
+                    (ChoiceBlock { block | selectionLocked <- True }, Effects.none)
+                _ -> (storyBlock, Effects.none)
+
         SBAction.AnimateIn ->
             case storyBlock of
                 LogicBlock _ -> (storyBlock, Effects.none)
@@ -226,9 +233,10 @@ choicesToHtmlList address isActive selection choices =
         then
             let actionList =
                 List.map (flip EditVar triggerLiveVarUpdate) variableEdits ++
-                    [ StoryBlockAction (SBAction.ChoiceSelect (Just index))
+                    [ StoryBlockAction SBAction.ChoiceConfirm
                     , JumpToLabel jumpToLabel
                     ]
-            in li [ onClick address <| Batch actionList ] [ text queryText ]
-        else li [ class <| if Just index == selection then "selected-choice" else "", onClick address NoOp ] [ text queryText ]
+            in li [ onClick address <| Batch actionList, onMouseEnter address <| StoryBlockAction (SBAction.ChoiceSelect (Just index)), onMouseLeave address <| StoryBlockAction (SBAction.ChoiceSelect Nothing)
+                    , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text queryText ]
+        else li [ class <| if Just index == selection then "selected-choice" else "", onClick address NoOp, onMouseEnter address NoOp, onMouseLeave address NoOp, style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text queryText ]
     in ul [] <| List.indexedMap choiceToLi choices

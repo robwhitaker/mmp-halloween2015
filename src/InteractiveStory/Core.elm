@@ -31,7 +31,7 @@ import Dict exposing (Dict)
 import String
 import Regex
 
-import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer)
+import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom)
 
 import Animation exposing (Animation)
 import AnimationWrapper as AW
@@ -158,7 +158,7 @@ update action model =
                 scrollEffect =
                         DOMInterface.scrollElementTo
                             (0, round <| AW.value newScrollAnimation)
-                            ".interactive-story-container" 0
+                            ".interactive-story-container"
                         |> Task.toMaybe
                         |> Task.map (always NoOp)
                         |> Effects.task
@@ -225,7 +225,7 @@ animateBlockIn (model, effects) =
 
 removeRepeatBlocks : Model -> (Model, Effects Action) -> (Model, Effects Action)
 removeRepeatBlocks oldModel (newModel, effects) =
-    if SL.selectedIndex newModel.storyTrack == SL.selectedIndex oldModel.storyTrack
+    if  SL.selectedIndex newModel.storyTrack == SL.selectedIndex oldModel.storyTrack
         || SB.animationInProgress oldModel.currentBlockInstance
     then (oldModel, Effects.none)
     else (newModel, effects)
@@ -331,9 +331,16 @@ applyChunking (model, effects) =
     let threshold = model.chunkingThreshold
         chunkSize = model.chunkSize
         chunkItUp =
-            (DOMInterface.getElementPositionInfo ".story-block" 0
-            `andThen` \startElem -> DOMInterface.getElementPositionInfo ".story-block" (chunkSize-1)
-            `andThen` \lastElem -> Task.succeed (lastElem.top + lastElem.height - startElem.top))
+            (DOMInterface.getElementPositionInfo ".story-block"
+            `andThen` (List.head >> Task.fromMaybe DOMInterface.NodeUndefined)
+            `andThen` \startElem ->
+                DOMInterface.getElementPositionInfo ".story-block"
+                `andThen` (List.drop (chunkSize) >> List.head >> Task.fromMaybe DOMInterface.NodeUndefined)
+                `andThen` \lastElem ->
+                    Task.succeed (
+                        (lastElem.top - lastElem.margin.top) - (startElem.top - startElem.margin.top)
+                    )
+            )
             |> Task.toMaybe
             |> Task.map (Maybe.map ApplyChunking)
             |> Task.map (Maybe.withDefault NoOp)
@@ -366,7 +373,9 @@ partitionTriggers storyBlock
 
 scrollToLast : Model -> Effects Action
 scrollToLast model =
-    DOMInterface.getElementPositionInfo ".story-block" (-1)
+    Task.sleep 50
+    `andThen` (\_ -> DOMInterface.getElementPositionInfo ".story-block")
+    `andThen` (List.reverse >> List.head >> Task.fromMaybe DOMInterface.NodeUndefined)
     |> Task.toMaybe
     |> Task.map (\result ->
         case result of
@@ -374,7 +383,7 @@ scrollToLast model =
             Just {top, height} ->
                 Animation.animation 0
                 |> Animation.from (toFloat model.scrollData.scrollTop)
-                |> Animation.to (toFloat <| model.scrollData.scrollTop + (round top) - 100)
+                |> Animation.to (toFloat <| model.scrollData.scrollTop + (round top) - (round <| toFloat model.windowHeight * 0.2))
                 |> Animation.duration 500
                 |> AnimateScroll
         )
@@ -387,11 +396,12 @@ scrollToLast model =
 render : Signal.Address Action -> Model -> Html
 render address model =
     let (chunksBeforeViewport, chunksWithinViewport, chunksAfterViewport) = partitionChunks model model.chunkStack
+        scrollData = model.scrollData
     in Html.Lazy.lazy2
         div
             [ class "interactive-story-container", style <| fullscreen [], onScroll address UserScroll ]
            ([ div
-                [ style <| topBar model.scrollData model.windowWidth [] ]
+                [ style <| topBar { scrollData | scrollTop <- 0 } model.windowWidth [] ]
                 [ div
                     [ style <| fixed <| topBar model.scrollData model.windowWidth [] ]
                     []
@@ -436,10 +446,11 @@ partitionChunks model chunks =
                 (\{ height, blocks } (newChunkList, currentTop) ->
                     ( { top = currentTop, height = height, blocks = blocks } :: newChunkList, currentTop + height )
                 )
-                ([], 0)
+                ([], topBarAnimationFrom )
                 chunksTopToBottom
             |> fst
             |> List.reverse -- put chunks back in top-to-bottom order
+
 
         viewportPrerenderMargin = (toFloat model.scrollData.clientHeight) * 0.10
 

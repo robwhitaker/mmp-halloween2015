@@ -54,7 +54,7 @@ animateIn : Time -> Styles -> Styles
 animateIn time styles =
     styles
     |> Position.position Position.Relative
-    |> Position.top (-20 + 20 * (animate time storyBlockAnimation))
+    -- |> Position.top (-20 + 20 * (animate time storyBlockAnimation))
     |> Css.style "opacity" (toString <| animate time storyBlockAnimation)
 
 spacer : Int -> Styles -> Styles
@@ -62,10 +62,18 @@ spacer windowHeight styles =
     styles
     |> Dimension.height windowHeight
 
+choiceBlockChoice : Bool -> Bool -> Styles -> Styles
+choiceBlockChoice selected isActive styles =
+    let selectedBgColor = if isActive then rgba 0 255 0 1 else rgba 190 255 190 1
+        bgColor = if selected then Background.color selectedBgColor else Background.color (rgba 0 0 0 0)
+    in styles |> bgColor
+
 ---- ANIMATIONS ----
 
+topBarAnimationFrom = 200
+
 topBarAnimation : Animation
-topBarAnimation = animation 0 |> from 100 |> to 50 |> duration 500 |> delay 50
+topBarAnimation = animation 0 |> from topBarAnimationFrom |> to 50 |> duration 100 |> delay 50
 
 storyBlockAnimation : Animation
 storyBlockAnimation = animation 0 |> from 0 |> to 1 |> duration (0.5 * Time.second)

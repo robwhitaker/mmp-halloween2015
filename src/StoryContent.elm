@@ -2,7 +2,7 @@ module StoryContent where
 
 import InteractiveStory.StoryBlock exposing (..)
 import Either exposing (..)
-import InteractiveStory.Trigger exposing (autoProgressAfter, domdom, performActionAfter)
+import InteractiveStory.Trigger exposing (autoProgressAfter, performActionAfter)
 import InteractiveStory.Action exposing (..)
 import AnimationWrapper as AW
 import Debug
@@ -13,7 +13,8 @@ cBlock = { queryText = "",
           variableEdits = [],
           triggers  = [],
           label     = Nothing,
-          selection = Nothing, animationState = AW.empty
+          selection = Nothing, animationState = AW.empty,
+          selectionLocked = False
         }
 
 
@@ -21,7 +22,14 @@ cBlock = { queryText = "",
 stuff = [
     LogicBlock { label = Nothing, run = \_ -> [EditVar (SetString "atOne" "sure am!") True]  },
     ContentBlock { newBlock |
-        content <- "{{ding}} {{ding}} {{ding}}Hi there, this is slide 1 {{okay}}! {{doobly}}. This is all {{atOne}}",
+        content <-
+          """{{ding}} {{ding}} {{ding}}Hi there,
+
+              this is slide 1 {{okay}}! {{doobly}}.
+              This is
+
+                  all {{atOne}}
+""",
         label <- Just "first" ,
         triggers <- [Left <| autoProgressAfter 600],
         variableEdits <- [(SetString "doobly" "Big jim bob"), SetString "okay" "dokay"]
