@@ -2,7 +2,7 @@ module StoryContent where
 
 import InteractiveStory.StoryBlock exposing (..)
 import Either exposing (..)
-import InteractiveStory.Trigger exposing (autoProgressAfter, performActionAfter)
+import InteractiveStory.Trigger exposing (autoProgressAfter, performActionAfter, howl)
 import InteractiveStory.Action exposing (..)
 import AnimationWrapper as AW
 import Debug
@@ -11,7 +11,7 @@ newBlock = { content = "", variableEdits = [], triggers = [], disableProgression
 cBlock = { queryText = "",
           choices   = [],
           variableEdits = [],
-          triggers  = [],
+          triggers  = [Left howl],
           label     = Nothing,
           selection = Nothing, animationState = AW.empty,
           selectionLocked = False

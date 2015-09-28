@@ -41,6 +41,7 @@ import Html.Events.Extra exposing (ScrollEvent)
 import List.Extra exposing (takeWhile)
 
 
+
 ---- INTERACTIVE STORY MODEL ----
 
 type alias Model = {

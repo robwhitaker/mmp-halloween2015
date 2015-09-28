@@ -13,11 +13,12 @@ import Window
 
 import StoryContent
 
+
 app = StartApp.start {
     init = init StoryContent.stuff,
     view = render,
     update = update,
-    inputs = [(always <| Batch [NextBlock]) <~ Mouse.clicks, WindowResize <~ windowDimensions ]
+    inputs = [(always <| Batch [NextBlock]) <~ Mouse.clicks, WindowResize <~ windowDimensions]
     }
 
 main = app.html
