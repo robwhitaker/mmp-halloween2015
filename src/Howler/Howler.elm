@@ -5,7 +5,9 @@ import Task exposing (Task)
 import Dict exposing (Dict)
 import Time exposing (Time)
 
-type alias AudioObject action = {
+import Debug
+
+type alias AudioObject = {
     src            : List String,
     loop           : Maybe Bool,
     volume         : Maybe Float,
@@ -15,8 +17,8 @@ type alias AudioObject action = {
     pool           : Maybe Int
 }
 
-empty : AudioObject Int
-empty =
+emptyAudioObject : AudioObject
+emptyAudioObject =
     { src = []
     , loop = Nothing
     , volume = Nothing
@@ -30,62 +32,64 @@ type alias PlayId = Int
 type alias SoundLabel = String
 type alias SpriteLabel = String
 
-type alias SoundObject = { soundLabel : SoundLabel, playId : Maybe PlayId }
-type alias Event action = { event : String, oneOff : Bool, wrapperFunction : (SoundObject, String) -> action }
+type alias SoundInstance = { soundLabel : SoundLabel, playId : Maybe PlayId }
+
+emptySoundInstance : SoundInstance
+emptySoundInstance = { soundLabel = "", playId = Nothing }
 
 ---- CONTROLS ----
 
-create : SoundLabel -> AudioObject action -> Task x SoundObject
+create : SoundLabel -> AudioObject -> Task x SoundInstance
 create = Native.Howler.create
 
-play : Maybe SpriteLabel -> SoundObject -> Task x SoundObject
+play : Maybe SpriteLabel -> SoundInstance -> Task x SoundInstance
 play = Native.Howler.play
 
-playSound : SoundObject -> Task x SoundObject
+playSound : SoundInstance -> Task x SoundInstance
 playSound = play Nothing
 
-playSprite : SpriteLabel -> SoundObject -> Task x SoundObject
+playSprite : SpriteLabel -> SoundInstance -> Task x SoundInstance
 playSprite = Just >> play
 
-pause : SoundObject -> Task x SoundObject
+pause : SoundInstance -> Task x SoundInstance
 pause = Native.Howler.pause
 
-stop : SoundObject -> Task x SoundObject
+stop : SoundInstance -> Task x SoundInstance
 stop = Native.Howler.stop
 
-mute : Bool -> SoundObject -> Task x SoundObject
+mute : Bool -> SoundInstance -> Task x SoundInstance
 mute = Native.Howler.mute
 
-volume : Float -> SoundObject -> Task x SoundObject
+volume : Float -> SoundInstance -> Task x SoundInstance
 volume = Native.Howler.volume
 
-fade : Float -> Float -> Time -> SoundObject -> Task x SoundObject
+fade : Float -> Float -> Time -> SoundInstance -> Task x SoundInstance
 fade = Native.Howler.fade
 
-seek : Float -> SoundObject -> Task x SoundObject
+seek : Float -> SoundInstance -> Task x SoundInstance
 seek = Native.Howler.seek
 
-loop : Bool -> SoundObject -> Task x SoundObject
+loop : Bool -> SoundInstance -> Task x SoundInstance
 loop = Native.Howler.loop
 
 ---- QUERIES ----
 
-isPlaying : SoundObject -> Task x Bool
+isPlaying : SoundInstance -> Task x Bool
 isPlaying = Native.Howler.isPlaying
 
-getDuration : SoundObject -> Task x Float
+getDuration : SoundInstance -> Task x Float
 getDuration = Native.Howler.getDuration
 
-isMuted : SoundObject -> Task x Bool
+isMuted : SoundInstance -> Task x Bool
 isMuted = Native.Howler.isMuted
 
-getVolume : SoundObject -> Task x Float
+getVolume : SoundInstance -> Task x Float
 getVolume = Native.Howler.getVolume
 
-getSeek : SoundObject -> Task x Float
+getSeek : SoundInstance -> Task x Float
 getSeek = Native.Howler.getSeek
 
-isLooping : SoundObject -> Task x Bool
+isLooping : SoundInstance -> Task x Bool
 isLooping = Native.Howler.isLooping
 
 ------ CALLBACK HANDLING ----
