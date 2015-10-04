@@ -8,7 +8,7 @@ import Dict
 
 import DOMInterface
 import Debug
-import Howler exposing (empty)
+import Howler exposing (emptyAudioObject)
 
 ---- TRIGGER BUILDERS ----
 
@@ -31,7 +31,7 @@ howl =
         --`andThen` Howler.playSprite "dong"
         --`andThen` Howler.playSprite "ding"
         --`andThen` (\_ ->
-        Howler.create "sound2" { empty | src <- ["sound1.mp3"], loop <- Just True }
+        Howler.create "sound2" { emptyAudioObject | src <- ["sound1.mp3"], loop <- Just True }
         `andThen` Howler.playSound
         `andThen` Howler.seek 10
         `andThen` (\sound ->

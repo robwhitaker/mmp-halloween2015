@@ -13,9 +13,11 @@ import Window
 
 import StoryContent
 
+-- import Howler exposing (emptyAudioObject)
+-- [("sound1", { emptyAudioObject | src <- ["sound1.mp3"]}), ("sound2", { emptyAudioObject | src <- ["sound1.mp3"], rate <- Just 0.5 })
 
 app = StartApp.start {
-    init = init StoryContent.stuff,
+    init = init StoryContent.stuff [],
     view = render,
     update = update,
     inputs = [(always <| Batch [NextBlock]) <~ Mouse.clicks, WindowResize <~ windowDimensions]

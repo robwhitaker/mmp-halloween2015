@@ -12,130 +12,110 @@ import Html.Attributes as Attr
 import Html.Events exposing (..)
 
 import InteractiveStory.Action exposing (..)
-import InteractiveStory.Trigger exposing (TriggerBuilder)
 import InteractiveStory.VariableModel exposing (VariableModel)
 import InteractiveStory.StoryBlockAction as SBAction
+import InteractiveStory.Sound as Sound
 
 import InteractiveStory.Styles.Core exposing (storyBlock, animateIn, storyBlockAnimation, choiceBlockChoice)
 
 import Animation
 import AnimationWrapper as AW
 
+import Maybe exposing (andThen)
 
+--import InteractiveStory.EffectSet exposing (..)
+import Regex
+import String
+import Dict
 import Debug
 
 ---- STORYBLOCK MODEL ----
 
-type alias Trigger = Either TriggerBuilder String
-type alias AnimationState = { prevClockTime : Time, elapsedTime : Time }
-
-type StoryBlock
-    = ContentBlock
-        { content            : String
-        , variableEdits      : List VarAction
-        , triggers           : List Trigger
-        , disableProgression : Bool
-        , label              : Maybe String
-        , animationState     : AW.AnimationWrapper
-        }
-    | ChoiceBlock
-        { queryText          : String
-        , choices            : List Choice
-        , variableEdits      : List VarAction
-        , triggers           : List Trigger
-        , label              : Maybe String
-        , selection          : Maybe Int
-        , selectionLocked    : Bool
-        , animationState     : AW.AnimationWrapper
-        }
-    | CustomBlock
-        { contentGenerator   : VariableModel -> Signal.Address Action -> Bool -> Html
-        , genContent         : Signal.Address Action -> Bool -> Html
-        , variableEdits      : List VarAction
-        , triggers           : List Trigger
-        , disableProgression : Bool
-        , label              : Maybe String
-        , animationState     : AW.AnimationWrapper
-        }
-    | LogicBlock
-        { run                : VariableModel -> List Action
-        , label              : Maybe String
-        }
-    | EndBlock
-        { label              : Maybe String
-        , triggers           : List Trigger
-        , animationState     : AW.AnimationWrapper
-        }
-
 type alias Choice =
-    { queryText             : String
-    , jumpToLabel           : String
-    , variableEdits         : List VarAction
-    , triggerLiveVarUpdate  : Bool
+    { text  : VariableModel -> Html
+    , jumpToLabel : Maybe String
+    , onChoose : VariableModel -> EffectSet
+    , chosen : Bool
     }
 
----- SOME HELPERS ----
+emptyChoice : Choice
+emptyChoice = { text = \_ -> Html.text "", jumpToLabel = Nothing, onChoose = \_ -> emptyEffectSet, chosen = False }
 
-getLabel : StoryBlock -> Maybe String
-getLabel storyBlock =
-    case storyBlock of
-        ContentBlock { label } -> label
-        ChoiceBlock  { label } -> label
-        CustomBlock  { label } -> label
-        LogicBlock   { label } -> label
-        EndBlock     { label } -> label
-        _ -> Nothing
+type alias ChoiceModel =
+    { selection : Maybe Int
+    , choices : List Choice
+    , showChosen : Bool
+    }
 
-getTriggers : StoryBlock -> List Trigger
-getTriggers storyBlock =
-    case storyBlock of
-        ContentBlock { triggers } -> triggers
-        ChoiceBlock  { triggers } -> triggers
-        CustomBlock  { triggers } -> triggers
-        EndBlock     { triggers } -> triggers
-        _ -> []
+emptyChoiceModel : ChoiceModel
+emptyChoiceModel = { selection = Nothing, choices = [], showChosen = True }
 
-getAnimationState : StoryBlock -> AW.AnimationWrapper
-getAnimationState storyBlock =
-    case storyBlock of
-        ContentBlock { animationState } -> animationState
-        ChoiceBlock  { animationState } -> animationState
-        CustomBlock  { animationState } -> animationState
-        EndBlock     { animationState } -> animationState
-        _ -> AW.empty
+type alias StoryBlock =
+    { contentGenerator : Bool -> VariableModel -> Signal.Address Action -> Html
+    , onEnter : VariableModel -> EffectSet
+    , onLeave : VariableModel -> EffectSet
+    , next : VariableModel -> Next
+    , label : Maybe String
+    , choiceModel : Maybe ChoiceModel
+    , animationState : AW.AnimationWrapper
+    }
 
-getDisableProgression : StoryBlock -> Bool
-getDisableProgression storyBlock =
-    case storyBlock of
-        ContentBlock block -> block.disableProgression
-        CustomBlock  block -> block.disableProgression
-        _ -> False
+emptyStoryBlock : StoryBlock
+emptyStoryBlock =
+    { contentGenerator = \_ _ _ -> Html.text ""
+    , onEnter = \_ -> emptyEffectSet
+    , onLeave = \_ -> emptyEffectSet
+    , next = \_ -> Continue
+    , label = Nothing
+    , choiceModel = Nothing
+    , animationState = AW.empty
+    }
 
-getVariableEdits : StoryBlock -> List VarAction
-getVariableEdits storyBlock =
-    case storyBlock of
-        ContentBlock { variableEdits } -> variableEdits
-        ChoiceBlock  { variableEdits } -> variableEdits
-        CustomBlock  { variableEdits } -> variableEdits
-        _ -> []
+---- HELPERS ----
 
-mapDisableProgression : (Bool -> Bool) -> StoryBlock -> StoryBlock
-mapDisableProgression f storyBlock =
-    case storyBlock of
-        ContentBlock block -> ContentBlock { block | disableProgression <- f block.disableProgression }
-        CustomBlock  block -> CustomBlock  { block | disableProgression <- f block.disableProgression }
-        _ -> storyBlock
+injectVariables : VariableModel -> String -> String
+injectVariables vars str =
+    let regex = Regex.regex "\\{\\{.*?\\}\\}" |> Regex.caseInsensitive
+        replaceFn { match } =
+            match
+            |> String.dropLeft 2
+            |> String.dropRight 2
+            |> (\str ->
+                Maybe.oneOf
+                    (Dict.get str vars.string ::
+                        (Maybe.map toString << Dict.get str) vars.num ::
+                            (Maybe.map toString << Dict.get str) vars.bool ::
+                                []
+                    )
+                )
+            |> Maybe.withDefault match
+        injectVars = Regex.replace Regex.All regex replaceFn
+    in injectVars str
 
 animationInProgress : StoryBlock -> Bool
-animationInProgress = getAnimationState >> AW.isDone >> not
+animationInProgress = .animationState >> AW.isDone >> not
 
----- DEFAULT MODELS ----
+---- PRESETS ----
 
-initialStoryBlock : StoryBlock
-initialStoryBlock = ContentBlock { content = "", variableEdits = [], triggers = [], disableProgression = False, label = Nothing, animationState = AW.empty }
+contentBlock : String -> StoryBlock
+contentBlock str = { emptyStoryBlock | contentGenerator <- \_ vars _ -> Markdown.toHtml <| injectVariables vars str }
 
-emptyBlock : StoryBlock
-emptyBlock = LogicBlock { run = always [], label = Nothing }
+choiceBlock : String -> List (String, Maybe String) -> Bool -> StoryBlock
+choiceBlock str choices showChosen =
+    { emptyStoryBlock |
+        contentGenerator <- (\_ vars _ -> Markdown.toHtml <| injectVariables vars str),
+        next <- (\_ -> Stop),
+        choiceModel <- Just
+            { emptyChoiceModel |
+                choices <-
+                    List.map (\(txt, label) ->
+                        { emptyChoice |
+                            text <- (\vars -> Markdown.toHtml <| injectVariables vars txt),
+                            jumpToLabel <- label
+                        }) choices,
+                showChosen <- showChosen
+            }
+    }
 
 ---- STORYBLOCK UPDATE ----
 
@@ -143,100 +123,72 @@ update : SBAction.Action -> StoryBlock -> (StoryBlock, Effects SBAction.Action)
 update action storyBlock =
     case action of
         SBAction.ChoiceSelect newSelection ->
-            case storyBlock of
-                ChoiceBlock block ->
-                    (ChoiceBlock { block | selection <- newSelection }, Effects.none)
-                _ -> (storyBlock, Effects.none)
+            case storyBlock.choiceModel of
+                Just choiceModel ->
+                    ({ storyBlock | choiceModel <- Just { choiceModel | selection <- newSelection }}, Effects.none)
+                Nothing -> (storyBlock, Effects.none)
 
         SBAction.ChoiceConfirm ->
-            case storyBlock of
-                ChoiceBlock block ->
-                    (ChoiceBlock { block | selectionLocked <- True }, Effects.none)
-                _ -> (storyBlock, Effects.none)
+            let newChoiceModel =
+                storyBlock.choiceModel
+                `andThen` \choiceModel -> choiceModel.selection
+                `andThen` \selection ->
+                    let newChoices =
+                        List.indexedMap
+                            (\index choice -> { choice | chosen <- index == selection || choice.chosen })
+                            choiceModel.choices
+                    in Just { choiceModel | choices <- newChoices }
+            in ({ storyBlock | choiceModel <- newChoiceModel }, Effects.none)
 
         SBAction.AnimateIn ->
-            case storyBlock of
-                LogicBlock _ -> (storyBlock, Effects.none)
-                _ ->
-                    let
-                        (newAnimationState, newEffects) = AW.update (AW.Start storyBlockAnimation) (getAnimationState storyBlock)
-                        newEffects' = Effects.map (SBAction.Tick) newEffects
-                    in
-                        case storyBlock of
-                            ContentBlock block -> (ContentBlock { block | animationState <- newAnimationState }, newEffects')
-                            ChoiceBlock  block -> (ChoiceBlock { block | animationState <- newAnimationState }, newEffects')
-                            CustomBlock  block -> (CustomBlock { block | animationState <- newAnimationState }, newEffects')
-                            EndBlock     block -> (EndBlock { block | animationState <- newAnimationState }, newEffects')
+            let (newAnimationState, newEffects) = AW.update (AW.Start storyBlockAnimation) storyBlock.animationState
+                newEffects' = Effects.map (SBAction.Tick) newEffects
+            in ({ storyBlock | animationState <- newAnimationState }, newEffects')
 
         SBAction.Tick awaction ->
-            case storyBlock of
-                LogicBlock _ -> (storyBlock, Effects.none)
-                _ ->
-                    let
-                        (newAnimationState, newEffects) = AW.update awaction (getAnimationState storyBlock)
-                        newEffects' = Effects.map (SBAction.Tick) newEffects
-                    in
-                        case storyBlock of
-                            ContentBlock block -> (ContentBlock { block | animationState <- newAnimationState }, newEffects')
-                            ChoiceBlock  block -> (ChoiceBlock { block | animationState <- newAnimationState }, newEffects')
-                            CustomBlock  block -> (CustomBlock { block | animationState <- newAnimationState }, newEffects')
-                            EndBlock     block -> (EndBlock { block | animationState <- newAnimationState }, newEffects')
-
-
+            let (newAnimationState, newEffects) = AW.update awaction storyBlock.animationState
+                newEffects' = Effects.map (SBAction.Tick) newEffects
+            in ({ storyBlock | animationState <- newAnimationState }, newEffects')
 
         _ -> (storyBlock, Effects.none)
 
 ---- STORYBLOCK RENDER ----
 
-render : Signal.Address Action -> Bool -> StoryBlock -> Html
-render address isActive block =
-    let animationTime = AW.query always <| getAnimationState block
+render : Signal.Address Action -> Bool -> VariableModel -> StoryBlock -> Html
+render address isActive vars block =
+    let animationTime = AW.query always block.animationState
     in
-        case block of
-            ContentBlock { content } ->
-                div
-                    [ makeBlockClassHeader "content-block" isActive, style <| animateIn animationTime <| storyBlock [] ]
-                    [ Markdown.toHtml content ]
+        div
+            [ class "story-block", style <| animateIn animationTime <| storyBlock [] ]
+            [ block.contentGenerator isActive vars address
+            , block.choiceModel
+                `andThen` (\choiceModel ->
+                    Just (choicesToHtmlList address isActive choiceModel.selection choiceModel.showChosen vars choiceModel.choices)
+                )
+              |> Maybe.withDefault (Html.text "")
+            ]
 
-            ChoiceBlock { queryText, choices, selection } ->
-                div
-                    [ makeBlockClassHeader "choice-block" isActive, style <| animateIn animationTime <| storyBlock [] ]
-                    [ Markdown.toHtml queryText
-                    , choicesToHtmlList address isActive selection choices
-                    ]
-
-            CustomBlock { genContent } ->
-                div
-                    [ makeBlockClassHeader "custom-block" isActive, style <| animateIn animationTime <| storyBlock [] ]
-                    [ genContent address isActive ]
-
-            EndBlock _ ->
-                div
-                    [ makeBlockClassHeader "end-block" isActive, style <| animateIn animationTime <| storyBlock [] ]
-                    [ text "End" ]
-
-            LogicBlock _ -> div [ makeBlockClassHeader "logic-block" isActive, Attr.style [("visibility", "hidden"), ("max-height", "0px")] ] []
-
-            _ -> div [ Attr.style [("display", "none")] ] []
-
-makeClassList : List String -> List (String, Bool)
-makeClassList classes =
-    List.map (flip (,) True) classes
-
-makeBlockClassHeader : String -> Bool -> Attribute
-makeBlockClassHeader class isActive = Attr.classList <| ("active-block", isActive) :: makeClassList ["story-block", class]
-
-choicesToHtmlList : Signal.Address Action -> Bool -> Maybe Int -> List Choice -> Html
-choicesToHtmlList address isActive selection choices =
-    let choiceToLi index { queryText, jumpToLabel, variableEdits, triggerLiveVarUpdate } =
-        if isActive
-        then
-            let actionList =
-                List.map (flip EditVar triggerLiveVarUpdate) variableEdits ++
+choicesToHtmlList : Signal.Address Action -> Bool -> Maybe Int -> Bool -> VariableModel -> List Choice -> Html
+choicesToHtmlList address isActive selection showChosen vars choices =
+    let choiceToLi index { text, jumpToLabel, onChoose, chosen } =
+        if not showChosen && chosen
+        then Html.text ""
+        else
+            if isActive
+            then
+                let actionList =
                     [ StoryBlockAction SBAction.ChoiceConfirm
-                    , JumpToLabel jumpToLabel
+                    , RunEffectSet (onChoose vars)
+                    , Maybe.map JumpToLabel jumpToLabel |> Maybe.withDefault NoOp
                     ]
-            in li [ onClick address <| Batch actionList, onMouseEnter address <| StoryBlockAction (SBAction.ChoiceSelect (Just index)), onMouseLeave address <| StoryBlockAction (SBAction.ChoiceSelect Nothing)
-                    , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text queryText ]
-        else li [ class <| if Just index == selection then "selected-choice" else "", onClick address NoOp, onMouseEnter address NoOp, onMouseLeave address NoOp, style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text queryText ]
+                in li
+                    [ onClick address <| Batch actionList
+                    , onMouseEnter address <| StoryBlockAction (SBAction.ChoiceSelect (Just index))
+                    , onMouseLeave address <| StoryBlockAction (SBAction.ChoiceSelect Nothing)
+                    , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text vars ]
+            else li
+                [ onClick address NoOp
+                , onMouseEnter address NoOp
+                , onMouseLeave address NoOp
+                , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text vars ]
     in ul [] <| List.indexedMap choiceToLi choices
