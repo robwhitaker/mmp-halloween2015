@@ -122,6 +122,21 @@ choiceBlock str choices showChosen =
 update : SBAction.Action -> StoryBlock -> (StoryBlock, Effects SBAction.Action)
 update action storyBlock =
     case action of
+        SBAction.Init ->
+            ({ storyBlock |
+                choiceModel <-
+                    storyBlock.choiceModel
+                    |> Maybe.map (\choiceModel ->
+                        { choiceModel |
+                            choices <-
+                                if choiceModel.showChosen
+                                then choiceModel.choices
+                                else List.filter (not << .chosen) choiceModel.choices,
+                            selection <- Nothing
+                        }
+                    )
+            }, Effects.none)
+
         SBAction.ChoiceSelect newSelection ->
             case storyBlock.choiceModel of
                 Just choiceModel ->
@@ -171,24 +186,21 @@ render address isActive vars block =
 choicesToHtmlList : Signal.Address Action -> Bool -> Maybe Int -> Bool -> VariableModel -> List Choice -> Html
 choicesToHtmlList address isActive selection showChosen vars choices =
     let choiceToLi index { text, jumpToLabel, onChoose, chosen } =
-        if not showChosen && chosen
-        then Html.text ""
-        else
-            if isActive
-            then
-                let actionList =
-                    [ StoryBlockAction SBAction.ChoiceConfirm
-                    , RunEffectSet (onChoose vars)
-                    , Maybe.map JumpToLabel jumpToLabel |> Maybe.withDefault NoOp
-                    ]
-                in li
-                    [ onClick address <| Batch actionList
-                    , onMouseEnter address <| StoryBlockAction (SBAction.ChoiceSelect (Just index))
-                    , onMouseLeave address <| StoryBlockAction (SBAction.ChoiceSelect Nothing)
-                    , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text vars ]
-            else li
-                [ onClick address NoOp
-                , onMouseEnter address NoOp
-                , onMouseLeave address NoOp
+        if isActive
+        then
+            let actionList =
+                [ StoryBlockAction SBAction.ChoiceConfirm
+                , RunEffectSet (onChoose vars)
+                , Maybe.map JumpToLabel jumpToLabel |> Maybe.withDefault NoOp
+                ]
+            in li
+                [ onClick address <| Batch actionList
+                , onMouseEnter address <| StoryBlockAction (SBAction.ChoiceSelect (Just index))
+                , onMouseLeave address <| StoryBlockAction (SBAction.ChoiceSelect Nothing)
                 , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text vars ]
+        else li
+            [ onClick address NoOp
+            , onMouseEnter address NoOp
+            , onMouseLeave address NoOp
+            , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text vars ]
     in ul [] <| List.indexedMap choiceToLi choices

@@ -6,7 +6,7 @@ import SelectionList exposing (SelectionList)
 import InteractiveStory.StoryBlock exposing (..)
 import InteractiveStory.StoryBlock as SB
 import InteractiveStory.StoryBlockAction as SBAction
-import InteractiveStory.Trigger exposing (..)
+-- import InteractiveStory.Trigger exposing (..)
 import InteractiveStory.Action exposing (..)
 import InteractiveStory.VariableModel exposing (..)
 import Effects exposing (Effects)
@@ -197,16 +197,25 @@ jumpToLabel label = progressToNewBlockWith (jumpTo label) False
 ---- These functions are meant to be easily composable to simplify code
 
 progressToNewBlockWith : (VariableModel -> (Model, Effects Action) -> (Model, Effects Action)) -> Bool -> Model -> (Model, Effects Action)
-progressToNewBlockWith progressFn allowRepeats model =
+progressToNewBlockWith progressFn initialRun model =
     (model, Effects.none)
-    |> addToHistory
-    |> handleEffectSet (model.storyTrack.selected.onLeave model.vars)
+    |> skipIfInitialRun initialRun addToHistory
+    |> skipIfInitialRun initialRun (handleEffectSet (model.storyTrack.selected.onLeave model.vars))
     |> progressFn model.vars -- decide on progression with the last set of vars since onLeave should be after transitioning
+    |> initStoryBlock
     |> handleEffectSet (model.storyTrack.selected.onEnter model.vars)
     |> animateBlockIn
     |> applyChunking
-    |> scrollToBlock
-    |> (if not allowRepeats then removeRepeatBlocks model else identity)
+    |> skipIfInitialRun initialRun scrollToBlock
+    |> skipIfInitialRun initialRun (removeRepeatBlocks model)
+
+skipIfInitialRun initialRun f = if initialRun then identity else f
+
+initStoryBlock : (Model, Effects Action) -> (Model, Effects Action)
+initStoryBlock (model, effects) =
+    let (newBlock, newEffects) = SB.update SBAction.Init model.storyTrack.selected
+        newStoryTrack = SL.updateSelected (always newBlock) model.storyTrack
+    in ({ model | storyTrack <- newStoryTrack }, Effects.batch [effects, Effects.map StoryBlockAction newEffects])
 
 addToHistory : (Model, Effects Action) -> (Model, Effects Action)
 addToHistory (model, effects) =

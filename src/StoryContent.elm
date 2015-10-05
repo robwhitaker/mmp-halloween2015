@@ -11,9 +11,9 @@ import Html
 
 --fadeIn = Sound.fade 0 1 3000
 
-stuff = [
-    { emptyStoryBlock | contentGenerator <- \_ _ _ -> Html.text "okay" }
-  , { emptyStoryBlock | contentGenerator <- \_ _ _ -> Html.text "nokay dokay" }
+stuff =
+  [ contentBlock "Start"
+  , contentBlock "Block 2"
   , contentBlock "This is a string..." |> \b -> { b | label <- Just "goodbye" }
   , choiceBlock "Bleh" [("Go to hello", Just "hello"), ("Go to goodbye", Just "goodbye")] False
   , { emptyStoryBlock | contentGenerator <- \_ _ _ -> Html.text "hello!", label <- Just "hello" }

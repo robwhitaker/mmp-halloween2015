@@ -7,3 +7,4 @@ type Action
     | Tick AW.Action
     | ChoiceSelect (Maybe Int)
     | ChoiceConfirm
+    | Init
