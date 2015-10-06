@@ -24,6 +24,53 @@ type alias Transition =
     , duration : Time
     }
 
+type alias LoopModel =
+    { sounds : List { priority : Int, sound : Howler.SoundInstance }
+    , count  : Int
+    }
+
+type alias SoundModel =
+    { bgm : LoopModel }
+
+type LoopType = BGM
+
+type SoundAction
+    = PlayLoop String LoopType (Maybe Transition) (Maybe Transition)
+    | StopLoop LoopType (Maybe Transition)
+    | PauseLoop LoopType
+    | UpdateLoop LoopType (Int, Howler.SoundInstance)
+
+
+update : SoundAction -> SoundModel -> (SoundModel, Effects SoundAction)
+update action model =
+    case action of
+        PlayLoop label loopType fadeIn fadeOut ->
+            let
+                loopModel = case loopType of
+                    BGM -> model.bgm
+
+                playingSounds = loopModel.sounds |> List.sortBy .priority |> List.reverse
+
+                newCount = loopModel.count + 1
+
+                newEffects =
+                    case List.head playingSounds of
+                        Nothing ->
+                            startBGM fadeIn { emptySoundInstance | soundLabel <- label }
+                            |> Task.map ((,) loopModel.count >> UpdateLoop loopType)
+
+                        Just _ ->
+                            startBGM fadeIn { emptySoundInstance | soundLabel <- label }
+                            `andThen` \newBGM -> (List.map (stopBGM fadeOut) |> Task.sequence)
+                            `andThen` \_ -> Task.succeed newBGM |> Task.map ((,) loopModel.count >> UpdateLoop loopType)
+
+            -- TODO: Pick this up later
+
+            in ({})
+
+
+
+
 emptyTransition : Transition
 emptyTransition = { from = 1, to = 1, duration = 0 }
 
