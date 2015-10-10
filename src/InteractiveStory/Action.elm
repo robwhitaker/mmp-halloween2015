@@ -6,7 +6,7 @@ import Animation exposing (Animation)
 import Time exposing (Time)
 import Howler
 import AnimationWrapper as AW
-import InteractiveStory.Sound as Sound
+--import InteractiveStory.Sound as Sound
 --import InteractiveStory.EffectSet exposing (..)
 
 ---- ACTION MODEL ----
@@ -24,6 +24,7 @@ type Action
     | ApplyChunking Float
     | ScrollTick AW.Action
     | RunEffectSet EffectSet
+    | RunEffectSetBeforeLeave EffectSet
     -- | UpdateBGM (Maybe Howler.SoundInstance)
     | NoOp
 

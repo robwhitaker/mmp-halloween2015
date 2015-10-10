@@ -14,7 +14,7 @@ import Html.Events exposing (..)
 import InteractiveStory.Action exposing (..)
 import InteractiveStory.VariableModel exposing (VariableModel)
 import InteractiveStory.StoryBlockAction as SBAction
-import InteractiveStory.Sound as Sound
+--import InteractiveStory.Sound as Sound
 
 import InteractiveStory.Styles.Core exposing (storyBlock, animateIn, storyBlockAnimation, choiceBlockChoice)
 
@@ -100,7 +100,7 @@ animationInProgress = .animationState >> AW.isDone >> not
 contentBlock : String -> StoryBlock
 contentBlock str = { emptyStoryBlock | contentGenerator <- \_ vars _ -> Markdown.toHtml <| injectVariables vars str }
 
-choiceBlock : String -> List (String, Maybe String) -> Bool -> StoryBlock
+choiceBlock : String -> List (String, Maybe String, Maybe (VariableModel -> EffectSet)) -> Bool -> StoryBlock
 choiceBlock str choices showChosen =
     { emptyStoryBlock |
         contentGenerator <- (\_ vars _ -> Markdown.toHtml <| injectVariables vars str),
@@ -108,10 +108,11 @@ choiceBlock str choices showChosen =
         choiceModel <- Just
             { emptyChoiceModel |
                 choices <-
-                    List.map (\(txt, label) ->
+                    List.map (\(txt, label, onChoose) ->
                         { emptyChoice |
                             text <- (\vars -> Markdown.toHtml <| injectVariables vars txt),
-                            jumpToLabel <- label
+                            jumpToLabel <- label,
+                            onChoose <- Maybe.withDefault (always emptyEffectSet) onChoose
                         }) choices,
                 showChosen <- showChosen
             }
@@ -190,7 +191,7 @@ choicesToHtmlList address isActive selection showChosen vars choices =
         then
             let actionList =
                 [ StoryBlockAction SBAction.ChoiceConfirm
-                , RunEffectSet (onChoose vars)
+                , (if jumpToLabel == Nothing then RunEffectSet else RunEffectSetBeforeLeave) (onChoose vars)
                 , Maybe.map JumpToLabel jumpToLabel |> Maybe.withDefault NoOp
                 ]
             in li

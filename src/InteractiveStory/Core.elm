@@ -31,7 +31,7 @@ import Dict exposing (Dict)
 import String
 import Regex
 
-import InteractiveStory.Sound as Sound
+--import InteractiveStory.Sound as Sound
 
 import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom)
 
@@ -51,6 +51,7 @@ type alias Model = {
     storyTrack           : SelectionList StoryBlock,
     --bgm                  : Maybe Howler.SoundInstance,
     --currentBlockInstance : StoryBlock,
+    queuedEffectSet      : List EffectSet,
     blockHistory         : List (Signal.Address Action -> Html),
     chunkStack           : List Chunk,
     chunking             : Bool,
@@ -84,6 +85,7 @@ init inputList audioList =
         , blockHistory = []
         , chunkStack = []
         , chunking = False
+        , queuedEffectSet = []
         , vars = emptyVarModel
         , windowWidth = 0
         , windowHeight = 0
@@ -107,6 +109,12 @@ update action model =
 
         --Trigger action triggerSourceIndex ->
         --    trigger model action triggerSourceIndex
+
+        RunEffectSet effectSet ->
+            handleEffectSet (always effectSet) (model, Effects.none)
+
+        RunEffectSetBeforeLeave effectSet ->
+            ({ model | queuedEffectSet <- effectSet :: model.queuedEffectSet }, Effects.none)
 
         EditVar varAction ->
             let vars = model.vars
@@ -200,16 +208,28 @@ progressToNewBlockWith : (VariableModel -> (Model, Effects Action) -> (Model, Ef
 progressToNewBlockWith progressFn initialRun model =
     (model, Effects.none)
     |> skipIfInitialRun initialRun addToHistory
-    |> skipIfInitialRun initialRun (handleEffectSet (model.storyTrack.selected.onLeave model.vars))
+    |> processQueuedEffectSets
+    |> skipIfInitialRun initialRun (handleEffectSet (\m -> m.storyTrack.selected.onLeave m.vars))
     |> progressFn model.vars -- decide on progression with the last set of vars since onLeave should be after transitioning
     |> initStoryBlock
-    |> handleEffectSet (model.storyTrack.selected.onEnter model.vars)
+    |> (handleEffectSet (\m -> m.storyTrack.selected.onEnter m.vars))
     |> animateBlockIn
     |> applyChunking
     |> skipIfInitialRun initialRun scrollToBlock
     |> skipIfInitialRun initialRun (removeRepeatBlocks model)
 
 skipIfInitialRun initialRun f = if initialRun then identity else f
+
+processQueuedEffectSets : (Model, Effects Action) -> (Model, Effects Action)
+processQueuedEffectSets (model, effects) =
+    let effectSets = List.reverse model.queuedEffectSet
+        (newModel, newEffects) = 
+            List.foldl 
+                (\effectSet newTuple -> handleEffectSet (always effectSet) newTuple)
+                (model, effects)
+                effectSets
+        newModel' = { newModel | queuedEffectSet <- [] }
+    in (newModel', newEffects)
 
 initStoryBlock : (Model, Effects Action) -> (Model, Effects Action)
 initStoryBlock (model, effects) =
@@ -222,14 +242,17 @@ addToHistory (model, effects) =
     let newHistoricalBlock = (\addr -> SB.render addr False model.vars model.storyTrack.selected)
     in ( { model | blockHistory <- model.blockHistory ++ [newHistoricalBlock] }, effects )
 
-handleEffectSet : EffectSet -> (Model, Effects Action) -> (Model, Effects Action)
-handleEffectSet { variableEdits } (model, effects) =
-    (model, effects)
-    |> applyVariableEdits variableEdits
+handleEffectSet : (Model -> EffectSet) -> (Model, Effects Action) -> (Model, Effects Action)
+handleEffectSet getEffectSet (model, effects) =
+    let { variableEdits } = getEffectSet model
+    in 
+        (model, effects)
+        |> applyVariableEdits variableEdits
 
 applyVariableEdits : List VarAction -> (Model, Effects Action) -> (Model, Effects Action)
 applyVariableEdits variableEdits (model, effects) =
     variableEdits
+    |> Debug.log "varEdits"
     |> List.map EditVar
     |> Batch
     |> flip update model

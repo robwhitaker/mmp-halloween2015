@@ -12,10 +12,23 @@ import Html
 --fadeIn = Sound.fade 0 1 3000
 
 stuff =
-  [ contentBlock "Start"
-  , contentBlock "Block 2"
-  , contentBlock "This is a string..." |> \b -> { b | label <- Just "goodbye" }
-  , choiceBlock "Bleh" [("Go to hello", Just "hello"), ("Go to goodbye", Just "goodbye")] False
+  [ contentBlock "Start - {{ding}}"
+    |> (\b -> 
+        { b |
+            onEnter <- (always { variableEdits = [UpdateString "ding" <| \str -> Just (Maybe.withDefault "" str)] }),
+            onLeave <- (always { variableEdits = [SetString "ding" "ding set second"] }),
+            label <- Just "start"
+        }
+    )
+  , contentBlock "Block 2 - {{ding}}"
+      |> (\b -> 
+            { b |
+                onEnter <- (always { variableEdits = [SetString "ding" "ding set third"] }),
+                onLeave <- (always { variableEdits = [SetString "ding" "ding set fourth"] })
+            }
+        )
+  , contentBlock "This is a string... {{ding}}" |> \b -> { b | label <- Just "goodbye" }
+  , choiceBlock "Bleh - {{ding}}" [("Go to hello", Just "hello", Nothing), ("Go to goodbye", Just "goodbye", Nothing), ("Go to start", Just "start", Just (always { variableEdits = [SetString "ding" "bAck to 1!"] }))] False
   , { emptyStoryBlock | contentGenerator <- \_ _ _ -> Html.text "hello!", label <- Just "hello" }
   ]
 
