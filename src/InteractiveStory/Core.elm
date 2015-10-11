@@ -31,7 +31,7 @@ import Dict exposing (Dict)
 import String
 import Regex
 
---import InteractiveStory.Sound as Sound
+import InteractiveStory.Sound as Sound
 
 import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom)
 
@@ -49,8 +49,7 @@ import List.Extra exposing (takeWhile)
 
 type alias Model = {
     storyTrack           : SelectionList StoryBlock,
-    --bgm                  : Maybe Howler.SoundInstance,
-    --currentBlockInstance : StoryBlock,
+    soundModel           : Sound.SoundModel,
     queuedEffectSet      : List EffectSet,
     blockHistory         : List (Signal.Address Action -> Html),
     chunkStack           : List Chunk,
@@ -80,8 +79,7 @@ init inputList audioList =
             |> Effects.task
     in progressToNewBlockWith (always identity) True
         { storyTrack = SL.fromList head tail
-        --, currentBlockInstance = head
-        --, bgm = Nothing
+        , soundModel = Sound.emptySoundModel
         , blockHistory = []
         , chunkStack = []
         , chunking = False
@@ -107,8 +105,9 @@ update action model =
         JumpToLabel label ->
             jumpToLabel label model
 
-        --Trigger action triggerSourceIndex ->
-        --    trigger model action triggerSourceIndex
+        SoundAction soundAction ->
+            let (newSoundModel, newSoundEffects) = Sound.update soundAction model.soundModel
+            in ({ model | soundModel <- newSoundModel }, Effects.map SoundAction newSoundEffects)
 
         RunEffectSet effectSet ->
             handleEffectSet (always effectSet) (model, Effects.none)
@@ -177,8 +176,6 @@ update action model =
                 newHistory = List.drop model.chunkSize model.blockHistory
             in ({ model | chunkStack <- newChunk :: model.chunkStack, blockHistory <- newHistory, chunking <- False }, Effects.none)
 
-        --UpdateBGM soundInstance -> ({ model | bgm <- soundInstance }, Effects.none)
-
         Batch actions ->
             let foldFn action' (model', effects) =
                     let (newModel, newEffects) = update action' model'
@@ -194,12 +191,6 @@ nextBlock = progressToNewBlockWith moveTrackForward False
 
 jumpToLabel : String -> Model -> (Model, Effects Action)
 jumpToLabel label = progressToNewBlockWith (jumpTo label) False
-
---trigger : Model -> Action -> Maybe Int -> (Model, Effects Action)
---trigger model action triggerSourceIndex =
---    if Just (SL.selectedIndex model.storyTrack) == triggerSourceIndex || triggerSourceIndex == Nothing
---    then update action model
---    else (model, Effects.none)
 
 ---- ACTION COMPONENT FUNCTIONS ----
 ---- These functions are meant to be easily composable to simplify code
@@ -244,10 +235,21 @@ addToHistory (model, effects) =
 
 handleEffectSet : (Model -> EffectSet) -> (Model, Effects Action) -> (Model, Effects Action)
 handleEffectSet getEffectSet (model, effects) =
-    let { variableEdits } = getEffectSet model
+    let { variableEdits, soundUpdates } = getEffectSet model
     in 
         (model, effects)
         |> applyVariableEdits variableEdits
+        |> applySounds soundUpdates
+
+applySounds : List Sound.SoundAction -> (Model, Effects Action) -> (Model, Effects Action)
+applySounds soundActions (model, effects) =
+    soundActions
+    |> Debug.log "soundActions"
+    |> List.map SoundAction
+    |> Batch
+    |> flip update model
+    |> (\(model', effects') -> (model', Effects.batch [effects, effects']))
+
 
 applyVariableEdits : List VarAction -> (Model, Effects Action) -> (Model, Effects Action)
 applyVariableEdits variableEdits (model, effects) =
@@ -281,14 +283,6 @@ moveTrackForward vars (model, effects) =
         Stop -> (model, effects)
         Continue -> ( { model | storyTrack <- SL.next model.storyTrack }, effects)
         Label label -> jumpTo label vars (model, effects)
-
---applyTriggers : (Model, Effects Action) -> (Model, Effects Action)
---applyTriggers (model, effects) =
---    let triggers =
---        partitionTriggers model.currentBlockInstance
---        |> fst
---        |> List.map (\f -> f <| SL.selectedIndex model.storyTrack)
---    in (model, Effects.batch <| effects :: triggers)
 
 jumpTo : String -> VariableModel -> (Model, Effects Action) -> (Model, Effects Action)
 jumpTo label _ (model, effects) =
@@ -325,21 +319,6 @@ applyChunking (model, effects) =
         then addAdditionalEffects [chunkItUp] ({ model | chunking <- True }, effects)
         else (model, effects)
 
---handleAudio : (Model, Effects Action) -> (Model, Effects Action)
---handleAudio (model, effects) =
---    let bgmAction = SB.getBGMAction model.currentBlockInstance
---        newEffect =
---            case bgmAction of
---                Nothing -> Effects.none
---                Just bgmAction' ->
---                    Sound.runBGMAction bgmAction' model.bgm
---                    |> Task.mapError (Debug.log "err")
---                    |> Task.toMaybe
---                    |> Task.map (Just >> Maybe.map UpdateBGM)
---                    |> Task.map (Maybe.withDefault NoOp)
---                    |> Effects.task
---    in addAdditionalEffects [newEffect] (model, effects)
-
 ---- HELPER FUNCTIONS ----
 
 getIndexOfLabel : String -> Model -> Maybe Int
@@ -349,16 +328,6 @@ getIndexOfLabel label model =
                 (x::xs) -> if x.label == label then Just index else getIndexOfLabel' label xs (index+1)
                 [] -> Nothing
     in getIndexOfLabel' (Just label) (SL.toList model.storyTrack) 0
-
---partitionTriggers : StoryBlock -> (List (Int -> Effects Action), List String)
---partitionTriggers storyBlock
---    = SB.getTriggers storyBlock
---    |> List.partition Either.isLeft
---    |> (\(ls, rs) ->
---        ( List.filterMap (Either.elim (Just << identity) (always Nothing)) ls
---        , List.filterMap (Either.elim (always Nothing) (Just << identity)) rs
---        )
---    )
 
 scrollToLast : Model -> Effects Action
 scrollToLast model =

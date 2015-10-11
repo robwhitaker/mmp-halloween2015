@@ -7,70 +7,28 @@ import InteractiveStory.Action exposing (..)
 import AnimationWrapper as AW
 import Debug
 import Html
---import InteractiveStory.Sound as Sound
+import InteractiveStory.Sound as Sound
 
---fadeIn = Sound.fade 0 1 3000
+fadeIn = Sound.fade 0 1 3000
+fadeOut = Sound.reverseTransition fadeIn
 
 stuff =
   [ contentBlock "Start - {{ding}}"
     |> (\b -> 
         { b |
-            onEnter <- (always { variableEdits = [UpdateString "ding" <| \str -> Just (Maybe.withDefault "" str)] }),
-            onLeave <- (always { variableEdits = [SetString "ding" "ding set second"] }),
+            onEnter <- (always { emptyEffectSet | variableEdits <- [UpdateString "ding" <| \str -> Just (Maybe.withDefault "" str)], soundUpdates <- [Sound.bgm "sound1" (Just fadeIn) (Just fadeOut)] }),
+            onLeave <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set second"] }),
             label <- Just "start"
         }
     )
   , contentBlock "Block 2 - {{ding}}"
       |> (\b -> 
             { b |
-                onEnter <- (always { variableEdits = [SetString "ding" "ding set third"] }),
-                onLeave <- (always { variableEdits = [SetString "ding" "ding set fourth"] })
+                onEnter <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set third"], soundUpdates <- [Sound.bgm "sound2" (Just fadeIn) (Just fadeOut)] }),
+                onLeave <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set fourth"] })
             }
         )
   , contentBlock "This is a string... {{ding}}" |> \b -> { b | label <- Just "goodbye" }
-  , choiceBlock "Bleh - {{ding}}" [("Go to hello", Just "hello", Nothing), ("Go to goodbye", Just "goodbye", Nothing), ("Go to start", Just "start", Just (always { variableEdits = [SetString "ding" "bAck to 1!"] }))] False
+  , choiceBlock "Bleh - {{ding}}" [("Go to hello", Just "hello", Nothing), ("Go to goodbye", Just "goodbye", Nothing), ("Go to start", Just "start", Just (always { emptyEffectSet | variableEdits <- [SetString "ding" "bAck to 1!"] }))] True
   , { emptyStoryBlock | contentGenerator <- \_ _ _ -> Html.text "hello!", label <- Just "hello" }
   ]
-
-  -- TODO : fix, choosing immediately eliminates option instead of waiting until block return
-
-
-
-
-
-
-
-
-
-
-
-
---stuff = [
---    LogicBlock { label = Nothing, run = \_ -> [EditVar (SetString "atOne" "sure am!") True]  },
---    ContentBlock { newBlock |
---        bgm <- Just (Sound.Play "sound1" (Just fadeIn) Nothing),
---        content <-
---          """{{ding}} {{ding}} {{ding}}Hi there,
-
---              this is slide 1 {{okay}}! {{doobly}}.
---              This is
-
---                  all {{atOne}}
---""",
---        label <- Just "first" ,
---        --triggers <- [Left <| autoProgressAfter 600],
---        variableEdits <- [(SetString "doobly" "Big jim bob"), SetString "okay" "dokay"]
---      },
---    --ContentBlock { newBlock | content <- "Hi there slide 1, I'm slide 2! Count {{ding}} and {{doobly}}", triggers <- [Left <| autoProgressAfter 600] },
---    --ContentBlock { newBlock | content <- "Slide THREE barging IN with a {{ding}}!", triggers <- [Left <| autoProgressAfter 600] },
---     ChoiceBlock { cBlock | queryText <- "Uhh... I'm 4. People scare me so please talk to someone else...",
---                           choices <- [{ queryText = "Talk to 5 - {{ding}}", jumpToLabel = "five", variableEdits = [(SetString "at-five" "600")], triggerLiveVarUpdate = False },
---                                      { queryText = "Talk to 1", jumpToLabel = "first", variableEdits = [SetBool "atOne" True, (UpdateNum "ding" (\n -> Maybe.withDefault -1 n |> (+) 1 |> Just))], triggerLiveVarUpdate = False }]
---                },
---    ContentBlock { newBlock |
---        bgm <- Just (Sound.Play "sound2" (Nothing) (Just <| Sound.reverseTransition fadeIn)),
---      content <- "Ugh, *yawn* what time is it? Too _early_. I'm {{at-five}}5, k? Night.", label <- Just "five" },
---    LogicBlock { label = Nothing, run = \_ -> [ JumpToLabel "first" ] },
---    EndBlock { label = Nothing, triggers = [], animationState = AW.empty }
---    ]
-

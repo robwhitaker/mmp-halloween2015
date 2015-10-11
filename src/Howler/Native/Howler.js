@@ -61,7 +61,7 @@ Elm.Native.Howler.make = function(localRuntime) {
         return Task.asyncFunction(function(callback) {
             try {
 
-                console.log(soundObject.soundLabel, soundObject.playId._0, "start")
+                // console.log(soundObject.soundLabel, soundObject.playId._0, "start")
                 if(!sounds[soundObject.soundLabel]) return callback(Task.fail("No such sound object."));
 
                 var sound = sounds[soundObject.soundLabel];
@@ -85,7 +85,7 @@ Elm.Native.Howler.make = function(localRuntime) {
         return (function(soundObject) {
             return Task.asyncFunction(function(callback) {
                 try {
-                    console.log(soundObject.soundLabel, soundObject.playId._0, field)
+                    // console.log(soundObject.soundLabel, soundObject.playId._0, field)
                     if(!sounds[soundObject.soundLabel]) return callback(Task.fail("No such sound object."));
 
                     var sound = sounds[soundObject.soundLabel];

@@ -3,7 +3,6 @@ module InteractiveStory.Sound where
 import Time exposing (Time)
 import Howler exposing (emptySoundInstance)
 import Task exposing (Task, andThen)
-import Either exposing (..)
 import Effects exposing (Effects)
 
 import Debug
@@ -33,6 +32,9 @@ type alias LoopModel =
 type alias SoundModel =
     { bgm : LoopModel }
 
+emptySoundModel : SoundModel
+emptySoundModel = { bgm = { sounds = [], count = 0 } }
+
 type LoopType = BGM
 
 type SoundAction
@@ -42,6 +44,7 @@ type SoundAction
     | HasStoppedLoop LoopType { priority : Int, sound : Howler.SoundInstance }
     | NoOp
 
+bgm label fadeIn fadeOut = PlayLoop label BGM fadeIn fadeOut 
 
 update : SoundAction -> SoundModel -> (SoundModel, Effects SoundAction)
 update action model =
@@ -79,13 +82,23 @@ update action model =
                 loopModel = case loopType of
                     BGM -> model.bgm
 
-                newLoopModel = { loopModel | sounds <- loopObj :: loopModel.sounds }
+                sortedSounds = 
+                    loopObj :: loopModel.sounds 
+                    |> List.sortBy .priority
+                    |> List.reverse
+
+                newEffects = Effects.none
+                    --List.drop 1 sortedSounds
+                    -- |> List.map (\{priority, sound} -> stopBGM Nothing priority loopType sound)
+                    -- |> Effects.batch
+
+                newLoopModel = { loopModel | sounds <- sortedSounds }
 
                 newModel =
                     case loopType of
                         BGM -> { model | bgm <- newLoopModel }
 
-            in (newModel, Effects.none)
+            in (newModel, newEffects)
 
         HasStoppedLoop loopType loopObj ->
             let
@@ -117,26 +130,6 @@ fade from to duration = { from = from, to = to, duration = duration }
 
 reverseTransition : Transition -> Transition
 reverseTransition { from, to, duration } = { from = to, to = from, duration = duration }
-
---runBGMAction : BGMAction -> Maybe Howler.SoundInstance -> Task x Howler.SoundInstance
---runBGMAction bgm currentSound =
---    case bgm of
---        Play label fadeIn fadeOut ->
---            case currentSound of
---                Nothing -> startBGM fadeIn { emptySoundInstance | soundLabel <- label }
---                Just sound ->
---                    startBGM fadeIn { emptySoundInstance | soundLabel <- label }
---                    `andThen` \newBGM -> stopBGM fadeOut sound
---                    `andThen` \_ -> Task.succeed newBGM
-
---        Pause ->
---            case currentSound of
---                Nothing -> Howler.pause emptySoundInstance
---                Just sound -> Howler.pause sound
---        Stop fadeOut ->
---            case currentSound of
---                Nothing -> Howler.stop emptySoundInstance
---                Just sound -> stopBGM fadeOut sound
 
 tupleToLoopModel (priority, sound) = { priority = priority, sound = sound }
 
@@ -170,15 +163,3 @@ stopBGM maybeTransition priority loopType soundInstance =
     |> Task.toMaybe
     |> Task.map (Maybe.withDefault NoOp)
     |> Effects.task
-
-
-
---playSFX : SFX -> Task x Howler.SoundInstance
---playSFX { label, sprite, delay } =
---    Task.sleep delay
---    `andThen` \_ -> Howler.play sprite { emptySoundInstance | soundLabel <- label }
---    `andThen` Howler.loop False
-
-
---playSFXList : List SFX -> Task x (List Howler.SoundInstance)
---playSFXList = List.map playSFX >> Task.sequence

@@ -6,7 +6,7 @@ import Animation exposing (Animation)
 import Time exposing (Time)
 import Howler
 import AnimationWrapper as AW
---import InteractiveStory.Sound as Sound
+import InteractiveStory.Sound as Sound
 --import InteractiveStory.EffectSet exposing (..)
 
 ---- ACTION MODEL ----
@@ -14,6 +14,7 @@ import AnimationWrapper as AW
 type Action
     = NextBlock
     | JumpToLabel String
+    | SoundAction Sound.SoundAction
     -- | Trigger Action (Maybe Int) -- current index in story track
     | EditVar VarAction
     | Batch (List Action)
@@ -38,13 +39,11 @@ type VarAction
 
 type alias EffectSet =
     { variableEdits : List VarAction
-    --, bgm : Maybe Sound.BGMAction
-    --, sfx : List Sound.SFX
-    --, triggers : List Action
+    , soundUpdates : List Sound.SoundAction
     }
 
 emptyEffectSet : EffectSet
-emptyEffectSet = { variableEdits = [] }
+emptyEffectSet = { variableEdits = [], soundUpdates = [] }
 
 type Next
     = Continue
