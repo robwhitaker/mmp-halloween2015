@@ -23,6 +23,7 @@ Elm.Native.Howler.make = function(localRuntime) {
         return Task.asyncFunction(function(callback) {
 
             var makeSpriteObj = function(dict) {
+
                 if(!dict) return dict;
 
                 var dictArray = List.toArray(Dict.toList(dict));

@@ -42,9 +42,12 @@ type SoundAction
     | StopLoop LoopType (Maybe Transition)
     | HasStartedLoop LoopType { priority : Int, sound : Howler.SoundInstance }
     | HasStoppedLoop LoopType { priority : Int, sound : Howler.SoundInstance }
+    | PlaySFX SFX
+    | StopSound String
     | NoOp
 
-bgm label fadeIn fadeOut = PlayLoop label BGM fadeIn fadeOut 
+bgm label fadeIn fadeOut = PlayLoop label BGM fadeIn fadeOut
+sfx label sprite delay = PlaySFX { label = label,  sprite = sprite, delay = delay }
 
 update : SoundAction -> SoundModel -> (SoundModel, Effects SoundAction)
 update action model =
@@ -61,7 +64,7 @@ update action model =
                         :: List.map (\{priority, sound} -> stopBGM fadeOut priority loopType sound) loopModel.sounds
                     |> Effects.batch
 
-                newModel = 
+                newModel =
                     case loopType of
                         BGM -> { model | bgm <- { loopModel | count <- newCount } }
 
@@ -72,25 +75,42 @@ update action model =
                 loopModel = case loopType of
                     BGM -> model.bgm
 
-                newEffects = 
+                newEffects =
                     List.map (\{priority, sound} -> stopBGM fadeOut priority loopType sound) loopModel.sounds
                     |> Effects.batch
             in (model, newEffects)
+
+        PlaySFX { label, sprite, delay } ->
+            let sfxEffect =
+                Task.sleep delay
+                `andThen`
+                    (\_ -> Howler.play sprite (Debug.log "OKAY THEN" { emptySoundInstance | soundLabel <- label })
+                    `andThen` Howler.loop False
+                    )
+                |> Task.toMaybe
+                |> Task.map (always NoOp)
+                |> Effects.task
+            in (model, sfxEffect)
+
+        StopSound label ->
+            let stopEffect =
+                Howler.stop { emptySoundInstance | soundLabel <- label }
+                |> Task.toMaybe
+                |> Task.map (always NoOp)
+                |> Effects.task
+            in (model, stopEffect)
 
         HasStartedLoop loopType loopObj ->
             let
                 loopModel = case loopType of
                     BGM -> model.bgm
 
-                sortedSounds = 
-                    loopObj :: loopModel.sounds 
+                sortedSounds =
+                    loopObj :: loopModel.sounds
                     |> List.sortBy .priority
                     |> List.reverse
 
                 newEffects = Effects.none
-                    --List.drop 1 sortedSounds
-                    -- |> List.map (\{priority, sound} -> stopBGM Nothing priority loopType sound)
-                    -- |> Effects.batch
 
                 newLoopModel = { loopModel | sounds <- sortedSounds }
 
@@ -105,10 +125,10 @@ update action model =
                 loopModel = case loopType of
                     BGM -> model.bgm
 
-                newLoopModel = 
-                    { loopModel | 
-                        sounds <- 
-                            loopModel.sounds 
+                newLoopModel =
+                    { loopModel |
+                        sounds <-
+                            loopModel.sounds
                             |> List.filter ((/=) loopObj)
                     }
 

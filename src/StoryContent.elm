@@ -14,18 +14,18 @@ fadeOut = Sound.reverseTransition fadeIn
 
 stuff =
   [ contentBlock "Start - {{ding}}"
-    |> (\b -> 
+    |> (\b ->
         { b |
             onEnter <- (always { emptyEffectSet | variableEdits <- [UpdateString "ding" <| \str -> Just (Maybe.withDefault "" str)], soundUpdates <- [Sound.bgm "sound1" (Just fadeIn) (Just fadeOut)] }),
-            onLeave <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set second"] }),
+            onLeave <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set second"], soundUpdates <- [Sound.sfx "sound3" (Just "sprite1") 1500] }),
             label <- Just "start"
         }
     )
   , contentBlock "Block 2 - {{ding}}"
-      |> (\b -> 
+      |> (\b ->
             { b |
-                onEnter <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set third"], soundUpdates <- [Sound.bgm "sound2" (Just fadeIn) (Just fadeOut)] }),
-                onLeave <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set fourth"] })
+                onEnter <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set third"] }),
+                onLeave <- (always { emptyEffectSet | variableEdits <- [SetString "ding" "ding set fourth"], soundUpdates <- [Sound.StopSound "sound1"] })
             }
         )
   , contentBlock "This is a string... {{ding}}" |> \b -> { b | label <- Just "goodbye" }
