@@ -8,6 +8,7 @@ import AnimationWrapper as AW
 import Debug
 import Html
 import InteractiveStory.Sound as Sound
+import InteractiveStory.VariableModel as VM
 
 fadeIn = Sound.fade 0 1 3000
 fadeOut = Sound.reverseTransition fadeIn
@@ -29,6 +30,6 @@ stuff =
             }
         )
   , contentBlock "This is a string... {{ding}}" |> \b -> { b | label <- Just "goodbye" }
-  , choiceBlock "Bleh - {{ding}}" [("Go to hello", Just "hello", Nothing), ("Go to goodbye", Just "goodbye", Nothing), ("Go to start", Just "start", Just (always { emptyEffectSet | variableEdits <- [SetString "ding" "bAck to 1!"] }))] True
+  , choiceBlock "Bleh - {{ding}}" [("Go to hello", Just "hello", Nothing, Nothing), ("Go to goodbye", Just "goodbye", Nothing, Nothing), ("Go to start", Just "start", Just (always { emptyEffectSet | variableEdits <- [SetString "ding" "bAck to 1!", SetBool "beenToEnd" True]}), Just (VM.getBool "beenToEnd" False >> not))] True
   , { emptyStoryBlock | contentGenerator <- \_ _ _ -> Html.text "hello!", label <- Just "hello" }
   ]

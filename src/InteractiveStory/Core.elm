@@ -214,8 +214,8 @@ skipIfInitialRun initialRun f = if initialRun then identity else f
 processQueuedEffectSets : (Model, Effects Action) -> (Model, Effects Action)
 processQueuedEffectSets (model, effects) =
     let effectSets = List.reverse model.queuedEffectSet
-        (newModel, newEffects) = 
-            List.foldl 
+        (newModel, newEffects) =
+            List.foldl
                 (\effectSet newTuple -> handleEffectSet (always effectSet) newTuple)
                 (model, effects)
                 effectSets
@@ -224,7 +224,7 @@ processQueuedEffectSets (model, effects) =
 
 initStoryBlock : (Model, Effects Action) -> (Model, Effects Action)
 initStoryBlock (model, effects) =
-    let (newBlock, newEffects) = SB.update SBAction.Init model.storyTrack.selected
+    let (newBlock, newEffects) = SB.update (SBAction.Init model.vars) model.storyTrack.selected
         newStoryTrack = SL.updateSelected (always newBlock) model.storyTrack
     in ({ model | storyTrack <- newStoryTrack }, Effects.batch [effects, Effects.map StoryBlockAction newEffects])
 
@@ -236,7 +236,7 @@ addToHistory (model, effects) =
 handleEffectSet : (Model -> EffectSet) -> (Model, Effects Action) -> (Model, Effects Action)
 handleEffectSet getEffectSet (model, effects) =
     let { variableEdits, soundUpdates } = getEffectSet model
-    in 
+    in
         (model, effects)
         |> applyVariableEdits variableEdits
         |> applySounds soundUpdates

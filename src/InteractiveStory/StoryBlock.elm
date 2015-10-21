@@ -35,11 +35,12 @@ type alias Choice =
     { text  : VariableModel -> Html
     , jumpToLabel : Maybe String
     , onChoose : VariableModel -> EffectSet
+    , showChoice : VariableModel -> Bool
     , chosen : Bool
     }
 
 emptyChoice : Choice
-emptyChoice = { text = \_ -> Html.text "", jumpToLabel = Nothing, onChoose = \_ -> emptyEffectSet, chosen = False }
+emptyChoice = { text = \_ -> Html.text "", jumpToLabel = Nothing, onChoose = \_ -> emptyEffectSet, showChoice = \_ -> True, chosen = False }
 
 type alias ChoiceModel =
     { selection : Maybe Int
@@ -100,7 +101,7 @@ animationInProgress = .animationState >> AW.isDone >> not
 contentBlock : String -> StoryBlock
 contentBlock str = { emptyStoryBlock | contentGenerator <- \_ vars _ -> Markdown.toHtml <| injectVariables vars str }
 
-choiceBlock : String -> List (String, Maybe String, Maybe (VariableModel -> EffectSet)) -> Bool -> StoryBlock
+choiceBlock : String -> List (String, Maybe String, Maybe (VariableModel -> EffectSet), Maybe (VariableModel -> Bool)) -> Bool -> StoryBlock
 choiceBlock str choices showChosen =
     { emptyStoryBlock |
         contentGenerator <- (\_ vars _ -> Markdown.toHtml <| injectVariables vars str),
@@ -108,11 +109,12 @@ choiceBlock str choices showChosen =
         choiceModel <- Just
             { emptyChoiceModel |
                 choices <-
-                    List.map (\(txt, label, onChoose) ->
+                    List.map (\(txt, label, onChoose, showChoice) ->
                         { emptyChoice |
                             text <- (\vars -> Markdown.toHtml <| injectVariables vars txt),
                             jumpToLabel <- label,
-                            onChoose <- Maybe.withDefault (always emptyEffectSet) onChoose
+                            onChoose <- Maybe.withDefault (always emptyEffectSet) onChoose,
+                            showChoice <- Maybe.withDefault (always True) showChoice
                         }) choices,
                 showChosen <- showChosen
             }
@@ -123,16 +125,17 @@ choiceBlock str choices showChosen =
 update : SBAction.Action -> StoryBlock -> (StoryBlock, Effects SBAction.Action)
 update action storyBlock =
     case action of
-        SBAction.Init ->
+        SBAction.Init vars ->
             ({ storyBlock |
                 choiceModel <-
                     storyBlock.choiceModel
                     |> Maybe.map (\choiceModel ->
                         { choiceModel |
                             choices <-
-                                if choiceModel.showChosen
-                                then choiceModel.choices
-                                else List.filter (not << .chosen) choiceModel.choices,
+                                List.filter (\{ showChoice } -> showChoice vars)
+                                <|  if choiceModel.showChosen
+                                    then choiceModel.choices
+                                    else List.filter (not << .chosen) choiceModel.choices,
                             selection <- Nothing
                         }
                     )
