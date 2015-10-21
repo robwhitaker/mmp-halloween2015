@@ -101,6 +101,17 @@ animationInProgress = .animationState >> AW.isDone >> not
 contentBlock : String -> StoryBlock
 contentBlock str = { emptyStoryBlock | contentGenerator <- \_ vars _ -> Markdown.toHtml <| injectVariables vars str }
 
+conditionalTextBlock : List (VariableModel -> Dict.Dict String a, String, a, String) -> StoryBlock
+conditionalTextBlock texts =
+    { emptyStoryBlock |
+        contentGenerator <- \_ vars _ ->
+            List.filterMap (\(getDict, key, comparator, str) ->
+                if Dict.get key (getDict vars) == Just comparator then Just ( Markdown.toHtml <| injectVariables vars str) else Nothing
+            ) texts
+            |> List.head
+            |> Maybe.withDefault (Html.text "")
+    }
+
 choiceBlock : String -> List (String, Maybe String, Maybe (VariableModel -> EffectSet), Maybe (VariableModel -> Bool)) -> Bool -> StoryBlock
 choiceBlock str choices showChosen =
     { emptyStoryBlock |
