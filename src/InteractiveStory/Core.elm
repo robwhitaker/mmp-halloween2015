@@ -202,8 +202,8 @@ progressToNewBlockWith progressFn initialRun model =
     |> processQueuedEffectSets
     |> skipIfInitialRun initialRun (handleEffectSet (\m -> m.storyTrack.selected.onLeave m.vars))
     |> progressFn model.vars -- decide on progression with the last set of vars since onLeave should be after transitioning
-    |> initStoryBlock
     |> (handleEffectSet (\m -> m.storyTrack.selected.onEnter m.vars))
+    |> initStoryBlock
     |> animateBlockIn
     |> applyChunking
     |> skipIfInitialRun initialRun scrollToBlock
