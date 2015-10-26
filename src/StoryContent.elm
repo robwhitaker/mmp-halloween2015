@@ -13,12 +13,12 @@ fadeIn = Sound.fade 0 1 1500
 fadeOut = Sound.reverseTransition fadeIn
 
 stuff =
-  --[ block01, block02, block03, block04, block05, block06, block07]
-  --++ countdown_block08 ++
+  [ block_pre_01, block_pre_02, block01, block02, block03, block04, block05, block06, block07]
+  ++ countdown_block08 ++
     [
       block09, block10, block11, block12, block13, block14, block15, block16,
-      block17, block18, block19, block20, block21, block22, block23, block24, block25, block26, block27, block28, block29, block30, block31, block32, block33, block34, block35, block36, block37, block38, block39, block40, block41, block42, block43, block44, block45, block42_2, block42_3
-      , gameover, goHome
+      block17, block18, block19, block20, block21, block22, block23, block24, block25, block26, block27, block28, block29, block30, block31, block32, block33, block34, block35, block36, block37, block38, block39, block40, block41, block42, block43, block44, block45, block42_2, block42_3, block46, block47, block48, block49, block50, block51, block52, block53, block54
+      , gameover, goHome, goHomeConfirmed, bundleOfFun
     ]
 
 label l b = {b | label <- Just l }
@@ -43,15 +43,39 @@ conditionalTextChoiceBlock texts default choices showChosen =
   |> \b ->
     { b | contentGenerator <- (conditionalTextBlock texts default).contentGenerator }
 
+block_pre_01 = choiceBlock """
+### Begin
+Marc has been gone for a little while now, and Arlene has taken to staring out the window again, much as how you first met her. Though it is hard to tell from behind, she seems rather bored, and now that no one else is around, she has allowed her shoulders to slump gloomily. As it is just about Halloween, perhaps she would like visit your world and go trick or treating, Reader. How about you invite her?
+"""
+  [ ("Invite Arlene.", Just "invite-arlene", Nothing, Nothing)
+  , ("No, thanks.", Just "bundle-of-fun", Nothing, Nothing)
+  ] True |> onEnter (bgm "mansion-bgm" (Just (fadeIn)) (Just fadeOut))
+
+bundleOfFun = """
+### End
+Well, aren't you a bundle of fun? If you get bored while not trick or treating, perhaps you would like to refresh the page and start over... That or just [return to watching other people have fun](http://midnightmurderparty.com).
+""" |> contentBlock |> label "bundle-of-fun" |> \b -> { b | next <- always Stop }
+
+block_pre_02 = """
+A weightiness comes over your body, and you find yourself quite tangible within the room again. This time, Arlene does hear your footsteps and turns to face you, smiling brightly, if not a bit distractedly.
+
+"Oh, look who it is!" she exclaims. "Didn't manage to sneak up on me this time, now did you?" A cackling laugh escapes her throat, and she reigns it back in. "So to what do I owe this pleasure?"
+
+You ask her if she'd like to go trick or treating with you.
+
+"In your world, you mean? That sounds so exciting! I'd love to! But how would we--"
+
+As if in answer to her question, a thin line slices through the air. For a moment, it hangs there, suspended in the air like a piece of silk, and then it begins to tear open. Air is sucked in with a *whoosh* as the tear in space grows wider, swirling with purple and red and orange and black. Through it, you can hear echoes of "trick or treat," screaming and then laughter, and spooky music. You can hear Halloween.
+""" |> contentBlock |> label "invite-arlene"
 
 block01 =
   """
-Arlene stands in front of in you the grand hall staring with wide, sparkling eyes at the portal. Her fists are curled in front of her like a boxer preparing for a fight, and she is practically bouncing on the balls of her feet so that she looks just like a little kid eagerly awaiting a treat.
+Arlene stares at the portal, eyes wide and sparkling. Her fists are curled in front of her like a boxer preparing for a fight, and she is practically bouncing on the balls of her feet so that she looks just like a little kid eagerly awaiting a treat.
 
 "Oh, this is so exciting!" she exclaims, looking from you to the portal as if she doesn't know where to go next. "Let's go pick out some costumes. Quickly!"
 
 She grabs you by the wrist so tightly it hurts just a little, and drags you off into the mansion behind her. The halls wind and twist, and at some point you go down a set of stairs. Finally, she pushes the door to a room open, flicks on the light, and rushes inside.
-""" |> contentBlock |> onEnter (bgm "mansion-bgm" (Just (fadeIn)) (Just fadeOut))
+""" |> contentBlock
 
 block02 = choiceBlock
   """
@@ -124,14 +148,14 @@ When Arlene comes out of the changing room, you hardly recognize her underneath 
 "What are ye doin' in the house of a witch, my pretty?" She cackles menacingly, throwing her head back. "Be gone with ye, quickly, into the changing room before I turn ye into a frog!" Another round of laughter as you walk past her into the room in the back to get changed.
 """)
   , (.string, "arlene-costume", "fairy-godmother", """
-Arlene comes out of the changing room in a beautiful blue dress. In one hand, she daintily carries a wand between two fingers. In the other, she is draping a keychain of a pumpking carriage that you're pretty sure did not actually come with the costume.
+Arlene comes out of the changing room in a beautiful blue dress. In one hand, she daintily carries a wand between two fingers. In the other, she is draping a keychain of a pumpkin carriage that you're pretty sure did not actually come with the costume.
 
 "Oh, my dear," she says, seeing you holding your costume. "You're going to be late for the ball! Quickly, into pumpkin carriage!" She tosses you the keychain. "Off to the changing room, now. Tut, tut!"
 
 And off you go, to change into your own costume before heading out.
 """)
   , (.string, "arlene-costume", "gandalf", """
-Arlene comes out of the changing room garbed in a grey cloak with a comedically lucious beard dangling off her face. In one hand, she holds a wooden staff. You make for the changing room yourself, but she steps in front of you.
+Arlene comes out of the changing room garbed in a grey cloak with a comedically luscious beard dangling off her face. In one hand, she holds a wooden staff. You make for the changing room yourself, but she steps in front of you.
 
 "YOU SHALL NOT PASS!" she exclaims, jabbing her staff loudly into the ground. "Just kidding!" She steps aside, smiling under the beard, which apparently tickles her nose because you hear her sneeze as you enter the changing room.
   """)
@@ -142,7 +166,7 @@ block06 =
   [ (.string, "reader-costume", "knight", """
 You leave the changing room fully garbed as a knight of the round table... or some table at least. Arlene claps her hands together happily.
 
-"Oh, my! How dashing you look, Sir Reader! If we come across any dragons in our quest for sugar, surely you will protect this fair maiden!" She raises a hand to her forehead in mock faint and laughs wildly."
+"Oh, my! How dashing you look, Sir Reader! If we come across any dragons in our quest for sugar, surely you will protect this fair maiden!" She raises a hand to her forehead in mock faint and laughs wildly.
 """),
   (.string, "reader-costume", "vampire", """
 You leave the changing room with your fangs firmly in place and your cape trailing out behind you.
@@ -182,15 +206,15 @@ countdown_block08 = [
 block09 = """
 THREE!
 
-She grabs your arm as she dives head-first into the swirling mass of the portal, pulling you in along side her. You tumble in head first, and the force of the portal hurls you onward so harshly that it feels as if it will turn you inside out. Streaks of purple and orange dart around your head, flashing into existence in one instant, flitting playfully around your head, and blinking out into the blackness of the portal in the next. In the distance, you can see shooting stars, except the stars aren't moving at all. Galaxies fly past, and your ears pound with the utter, discordant loudness of the abyss as it pulls you through. You hear screaming and laughing and howling and growling, all fading in and out in a clashing choir of Halloween fun.
+She grabs your arm as she dives into the swirling mass of the portal, pulling you in alongside her. You tumble in head first, and the force of the portal hurls you onward so harshly that it feels as if it will turn you inside out. Streaks of purple and orange dart around you, flashing into existence in one instant, flitting playfully around your head, and blinking out into the blackness of the portal in the next. In the distance, you can see shooting stars, except the stars aren't moving at all. Galaxies fly past, and your ears pound with the utter, discordant loudness of the abyss as it pulls you through. You hear screaming and laughing and howling and growling, all fading in and out in a clashing choir of Halloween fun.
 
-You turn to look for Arlene, and she is just barely ahead of you, tumbling and laughing, having the time of her life. A dark rift appears in the distance ahead and grows closer at an alarming rate. Through it, you can make out the dull grey pavement of a street, painted orange by the streetlights and perhaps a glowing jack-o-lantern. You wince as you rocket through the portal...
+You turn to look for Arlene, and she is just barely ahead of you, tumbling and laughing, having the time of her life. A dark rift appears in the distance ahead and grows closer at an alarming rate. Through it, you can make out the dull grey pavement of a street, painted orange by the streetlights and perhaps a glowing jack-o-lantern. In just a moment, you will rocket out of the other end of the portal and crash into the hard ground. As the exit hurtles towards you, you envision yourself splattering against the pavement, and you have to close your eyes. Even without sight, you can feel the exit approaching, propelling you to your--
 """ |> contentBlock |> onEnter (bgm "portal-bgm" Nothing Nothing)
 
-block10 = "...and land safely on your feet." |> contentBlock |> onEnter (stopBGM (Just <| Sound.reverseTransition (Sound.fade 0 0.9 1500)))
+block10 = "You land safely on your feet." |> contentBlock |> onEnter (stopBGM (Just <| Sound.reverseTransition (Sound.fade 0 0.9 1500)))
 
 block11 = choiceBlock """
-Mostly. Your head is spinning, and you feel rather nauseus after nearly being flipped inside out. Somehow, Arlene seems to be doing fine. Better than fine, in fact. She is beaming at you.
+Mostly safely. Your head is spinning, and you feel rather nauseous after nearly being flipped inside out. Somehow, Arlene seems to be doing fine. Better than fine, in fact. She is beaming at you.
 
 "That. Was. *Awesome!* Can we do it again?" How she isn't feeling ill, you do not know, but at least...
 
@@ -214,15 +238,13 @@ block14 = """
 
 block15 = conditionalTextChoiceBlock
   [ (.bool, "done-with-everything", True, """
-You return to the T-shaped intersection with Arlene. She look up and down all the streets and then back at you.
+You return to the T-shaped intersection with Arlene. She looks up and down all the streets and then back at you.
 
 "Oh, dear. It seems there isn't much left to do. Perhaps it's about time to head back to the Party, wouldn't you say?"
 
 Looking up and down the darkening streets as people shut their lights and less and less people pass by, you have to agree. It's about time to head home.
 
 "That was quite fun, though, Reader! It's been a while since I went trick or treating, so thanks for taking me along!"
-
-A portal opens up beside Arlene, and she groans. "Oh, dear. This again... Well, see you back in the mansion!" She hops into the portal.
   """)
   , (.bool, "visited-intersection", True, """
 You return to the T-shaped intersection with Arlene.
@@ -230,7 +252,7 @@ You return to the T-shaped intersection with Arlene.
 "Lead the way, Reader!"
   """)]
   """
-You are in a T-shaped intersection. Ahead of you is possibly the most decorated street you have ever seen. Spooky music eminates from one of the houses down this way, and the road is absolutely flooded with trick or treaters, hustling and bustling about, crying "trick or treat" happily at every door they approach. The street to your right is much quieter, and you can make out a couple hushed sobs coming from that direction. Down the road to your left, it sounds like a couple of teens are snickering about something. Perhaps they are up to something mischievious.
+You are in a T-shaped intersection. Ahead of you is possibly the most decorated street you have ever seen. Spooky music eminates from one of the houses down this way, and the road is absolutely flooded with trick or treaters, hustling and bustling about, crying "trick or treat" happily at every door they approach. The street to your right is much quieter, and you can make out a couple hushed sobs coming from that direction. Down the road to your left, it sounds like a couple of teens are snickering about something. Perhaps they are up to something mischievous.
 
 Arlene looks up and down all three roads before turning to you. "Hmm... so many choices. I wonder which way we should go first."
   """
@@ -264,10 +286,15 @@ Arlene looks up and down all three roads before turning to you. "Hmm... so many 
     , Nothing
     , Just (\vars -> isTrue "visited-bullies" vars && not (isTrue "high-schoolers-gone" vars))
     )
-  , ("Go home. *(this will end your trick or treating for the night)*"
+  , ("Go home for the night."
     , Just "go-home"
     , Nothing
+    , Just (.bool >> Dict.get "done-with-everything" >> Maybe.withDefault False >> not)
+    )
+  , ("Go home for the night."
+    , Just "go-home-confirmed"
     , Nothing
+    , Just (.bool >> Dict.get "done-with-everything" >> Maybe.withDefault False)
     )
   ] True
   |> label "intersection-1"
@@ -275,7 +302,7 @@ Arlene looks up and down all three roads before turning to you. "Hmm... so many 
   |> \b -> {b | onEnter <- (\vars -> setVars [SetBool "done-with-everything" <| List.foldl (&&) True <| List.map (flip isTrue vars) ["high-schoolers-gone", "done-with-kids", "done-with-old-lady", "visited-park", "visited-creepy-music-house", "visited-house-with-scarecrow", "visited-down-road"]] vars)}
 
 block16 = """
-You go straight ahead and enter the bustle of enthusiastic trick or treaters and blaring spooky sounds. Children are running up and down the street, nimbly dodging you around you as if you were no more than a lamp post or a fire hydrant. Arlene ogles at a couple well-decorated houses and screams in delight as a giant spider drops out of a tree at a group of kids as they approach a house. Then she takes off, dragging you down the road alongside her towards the source of some spooky music and witches' cackles.
+You go straight ahead and enter the bustle of enthusiastic trick or treaters and blaring spooky sounds. Children are running up and down the street, nimbly dodging around you as if you were no more than a lamp post or a fire hydrant. Arlene ogles at a couple well-decorated houses and screams in delight as a giant spider drops out of a tree at a group of kids as they approach a house. Then she takes off, dragging you down the road alongside her towards the source of some spooky music and witches' cackles.
 """ |> contentBlock |> label "straight-ahead"
 
 block17 = conditionalTextChoiceBlock
@@ -367,14 +394,14 @@ You both head back to the street.
   (.string, "scarecrow-took-candy", "handful", """
 You dig your whole hand into the candy bowl, and the zombie fingers clamp down on your own with a terrible growl from a speaker on the side of the bowl. When it lets go, you pull out a whole handful of candy and dump it into your bag.
 
-"My, my, Reader. Such a rebel. It says to please take 2." She casts you a mischeivous smile and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. Then, she returns for another handful. "There, that's two."
+"My, my, Reader. Such a rebel. It says to please take 2." She casts you a mischievous smile and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. Then, she returns for another handful. "There, that's two."
 
 You both head back to the street.
   """),
   (.string, "scarecrow-took-candy", "none", """
 You totally wimp out because you're scared of a plastic hand.
 
-"Oh, please," Arlene huffs. "Don't be such a baby." She grins mischieviously and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. She even goes back for seconds. "What? It *did* say to take two."
+"Oh, please," Arlene huffs. "Don't be such a baby." She grins mischievously and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. She even goes back for seconds. "What? It *did* say to take two."
 
 You both head back to the street.
 """)
@@ -395,11 +422,11 @@ The masked man chases you both around the lawn, down the side of the house, into
 
 "Woo," Arlene pants. "I think we lost him." She beams at you. "Shall we collect our surivors' prize?"
 
-But apparently she didn't expect and answer because she leads you to the front door and knocks. A short man with a hump back, lumpy forehead, snaggletooth, and muddy brown cloak greets you. "Ahh, I see you have survived the trials," he says in a distinctly fake Transylvanian accent. "I suppose you wish for a reward, of sorts?"
+She drags you to the front door and knocks without waiting for an answer. A short man with a hump back, lumpy forehead, snaggletooth, and muddy brown cloak greets you. "Ahh, I see you have survived ze trials," he says in a distinctly fake Transylvanian accent. "I suppose you vish for a revard, of sorts?"
 
 "Yes, please!" Arlene says.
 
-"Very well," the man responds. If you asked him for his name, 9 out of 10 says he'd respond with Igor. "Here you are." He tosses a couple goodie bags to both you and Arlene. "Now begone with you both, before I decide to use you in my... experiements." He laughs ominously.
+"Very well," the man responds. If you asked him for his name, 9 out of 10 says he'd respond with Igor. "Here you are." He tosses a couple goodie bags to both you and Arlene. "Now begone with you both, before I decide to use you in my... experiments." He laughs ominously.
 
 You and Arlene head back to the street.
 """ |> contentBlock |> label "creepy-music-house" |> goto "pick-a-house" |> onLeave (setVars [add "candy" 30])
@@ -416,7 +443,7 @@ You approach the house with the single pumpkin sitting on the stoop. As you get 
    )
  , ("No way! Someone decorated that. Well, kinda..."
    , Just "not-smashing-pumkins"
-   , Just <| setVars [SetBool "smashed-pumpkin" False, add "morality" 2]
+   , Just <| setVars [SetBool "smashed-pumpkin" False, add "morality" 5]
    , Nothing
    )
  ] True
@@ -442,7 +469,7 @@ She teeters as she pivots and reaches for a nearby bowl of candy. Arlene looks a
 The old lady turns around again and drops a couple pieces of candy into both of your bags, her hands shaking.
 """
   [ ("\"Excuse me, ma'am. Would you like us to help you carve your pumpkin?\" *(carve pumpkin)*"
-    , Just "carve-pumpkin", Just (setVars [add "morality" 3]), Nothing)
+    , Just "carve-pumpkin", Just (setVars [add "morality" 5]), Nothing)
   , ("\"Thank you!\" *(just leave)*"
     , Just "pick-a-house"
     , Just <| setVars [SetBool "done-with-old-lady" True]
@@ -475,7 +502,7 @@ You approach the old lady's house, glancing at the place her pumpkin used to be,
     )
   , ("Apologize."
     , Just "apologized"
-    , Just (setVars [SetBool "apologized" True, add "morality" 1])
+    , Just (setVars [SetBool "apologized" True, add "morality" 3])
     , Just (\vars -> Dict.get "apologized" vars.bool /= Just True)
     )
   , ("Nothing. *(return to street)*", Just "pick-a-house", Nothing, Nothing)
@@ -498,7 +525,7 @@ The old woman's eyes light up, and she smiles so genuinely that you can't help b
 """
   [ ("\"We'd love to!\" *(carve pumpkin)*"
     , Just "carve-pumpkin"
-    , Just <| setVars [add "morality" 3]
+    , Just <| setVars [add "morality" 5]
     , Nothing
     )
   , ("\"No thanks.\" *(return to street)*"
@@ -513,15 +540,11 @@ The old woman is delighted that you want to carve the pumpkin with her, and you 
 
 "Dear, it just occurred to me that I haven't yet introduced myself," the old woman says. "My name is Lucille, but you can just call me Lucy. What are your names?"
 
-"I'm Arlene," Arlene says, jabbing the knife into the pumpkin's face again and popping out and eye. "And this is my Reader friend." She gestures at you.
+"I'm Arlene," Arlene says, jabbing the knife into the pumpkin's face again and popping out an eye. "And you can call my friend Reader." She gestures at you.
 
-"Reader friend?" Lucy asks, puzzled.
+"Arlene and Rita. Such pretty names. You know, I knew a little girl once who wanted her name to be Arlene. She even went around telling people it *was* her real name. I lost track of her after her mother passed, unfortunately. But she was always such a sweet girl."
 
-"Yes, indeed. Don't worry about it too much. It's a tad hard to explain." Arlene laughs it off, and Lucy seems okay accepting this, though she still looks a little confused.
-
-"You know," Lucy says after a moment. "I knew a little girl once who wanted her name to be Arlene. She even went around telling people it *was* her real name. I lost track of her after her mother passed, unfortunately. But I always did think Arlene was a very pretty name."
-
-"Why, thank you!" Arlene chimes. "I'm glad you think my name is pretty. And I do hope that little girl is alright. Perhaps you'll meet her again someday."
+"Oh, my. I do hope she's alright," Arlene says, sounding a little surprised. "Perhaps you'll meet her again someday."
 
 "Perhaps," Lucy chuckles. "My, the pumpkin looks lovely."
 
@@ -537,7 +560,11 @@ You and Arlene wish her well and head back to the street where you cast one fina
 """ |> contentBlock |> label "carve-pumpkin" |> goto "pick-a-house" |> onLeave (setVars [SetBool "done-with-old-lady" True])
 
 block28 = conditionalTextChoiceBlock
-  [ (.bool, "visited-boring-house", False, """
+  [ (.bool, "visited-boring-house", True, """
+You return to the unlit house and can hear growling somewhere around the back. Arlene seems to want to check it out.
+    """)
+  ]
+  """
 You approach the boring, unlit house with Arlene dragging her feet behind you. She doesn't really want to visit this house since obviously no one is even home, but for some reason you insist. When you get to the door, you knock.
 
 No one answers. I mean, what did you expect really? There aren't even cars in the driveway.
@@ -545,11 +572,7 @@ No one answers. I mean, what did you expect really? There aren't even cars in th
 You turn around to leave, but before you get very far, you hear something growling in the distance. It sounds as if it's coming from somewhere behind the house. Arlene now looks quite interested.
 
 "Perhaps coming here will be interesting after all!"
-    """)
-  , (.bool, "visited-boring-house", True, """
-You return to the unlit house and can hear growling somewhere around the back. Arlene seems to want to check it out.
-    """)
-  ] ""
+    """
   [ ("Turn back.", Just "pick-a-house", Nothing, Nothing)
   , ("Investigated the growling.", Just "dark-house-back-yard", Nothing, Nothing)
   ] True |> label "dark-house" |> onLeave (setVars [SetBool "visited-boring-house" True])
@@ -563,7 +586,7 @@ You walk around the back of the house with Arlene and follow the growling to a f
 
 block30 = conditionalTextBlock
   [(.string, "reader-costume", "godzilla", """
-Arlene hops the fence ahead of you, and you try to follow. However, since you decided to wear that ridiculously oversized godzilla costume, you can't quite seem to make it over the fence. Eventually, Arlene gets tired of waiting and climbs back over to hoist you up. You barely clear the top of the fence and tumble over into the park. Embarassing.
+Arlene hops the fence ahead of you, and you try to follow. However, since you decided to wear that ridiculously oversized Godzilla costume, you can't quite seem to make it over the fence. Eventually, Arlene gets tired of waiting and climbs back over to hoist you up. You barely clear the top of the fence and tumble over into the park. Embarassing.
 
 "Oh, my. Are you alright, Reader?" Arlene asks, landing nimbly beside you. She grabs your hand and helps you off the ground.
   """)]
@@ -688,8 +711,8 @@ Or, if you want to try again, just refresh the page.
                  | morality >= 5 && morality < 15 -> "a good person"
                  | morality >= 15 -> "a fantastic rolemodel for society"
                  | morality <= -5 && morality > -10 -> "a bit of a prankster"
-                 | morality <= -10 && morality > -20 -> "extremely mischievous. Actually, you might own some people apologies... Yeah..."
-                 | morality <= -20 -> "a horrible person."
+                 | morality <= -10 && morality > -20 -> "extremely mischievous. Actually, you might owe some people apologies... Yeah..."
+                 | morality <= -20 -> "a horrible person"
             candy = SetNum "candy" <| Maybe.withDefault 0 <| Dict.get "candy" vars.num
             gameovertext = SetString "game-over-text" <| Maybe.withDefault "" <| Dict.get "game-over-text" vars.string
             gameovertext2 = SetString "game-over-text-2" <| Maybe.withDefault "" <| Dict.get "game-over-text-2" vars.string
@@ -704,7 +727,7 @@ You turn back.
 """
   |> contentBlock
   |> label "continue-down-road"
-  |> onLeave (setVars [add "candy" 150])
+  |> onLeave (setVars [add "candy" 200])
   |> \b -> { b |
     next <- (\vars -> if Dict.get "visited-bullies" vars.bool /= Just True then Label "bully-snatches-candy" else Label "pick-a-house") }
 
@@ -774,6 +797,21 @@ block41 = conditionalTextChoiceBlock
   [(.bool, "talked-to-kids", True, """
 You head down the street to your right and walk up to the sad-looking children. They look up at you hopefully. "Have you found our candy?" the girl asks.
   """)
+  , (.bool, "has-candy", True, """
+You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be conforting her little brother looks up at you mistrustfully.
+
+"What do you want? We don't have any candy left, if you're trying to steal it too."
+
+"Someone stole your candy? It didn't happen to be a bunch of high schoolers, did it?" Arlene asks, glancing back towards where you met the bullies.
+
+"Y-yeah," the younger boy sniffles. "It was a bunch of stupid-face big kids. We worked really hard getting that candy..."
+
+Another kid, who has been quietly staring at you two in awe, speaks up. "So... t-they went that way... I think." He points back towards the intersection.
+
+"I see," Arlene says. "We had a bit of a run in with them ourselves. Those guys were jerks."
+
+"Yeah, you said it!" the brown-haired girl agrees.
+""")
   , (.bool, "high-schoolers-gone", True, """
 You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be conforting her little brother looks up at you mistrustfully.
 
@@ -809,18 +847,18 @@ The sniffling kid looks up at her hopefully. "W-would you really?"
 """
   [ ("Give candy."
     , Just "return-childrens-candy"
-    , Just <| setVars [add "morality" 3, add "candy" 12]
+    , Just <| setVars [add "morality" 5, add "candy" 12, SetBool "has-candy" False]
     , Just (\vars -> Dict.get "has-candy" vars.bool == Just True)
     )
   , ("Give them some of your own candy."
     , Just "give-some-candy"
-    , Just <| setVars [add "morality" 5, UpdateNum "candy" (Maybe.map (\n -> if n - 100 < 0 then 0 else n - 100))]
-    , Just (\vars -> isTrue "high-schoolers-gone" vars && (Dict.get "candy" vars.num |> Maybe.withDefault 0) > 0 )
+    , Just <| setVars [add "morality" 6, UpdateNum "candy" (Maybe.map (\n -> if n - 100 < 0 then 0 else n - 100))]
+    , Just (\vars -> isTrue "high-schoolers-gone" vars && (Dict.get "candy" vars.num |> Maybe.withDefault 0) > 0 && not (isTrue "has-candy" vars) )
     )
   , ("Return to intersection."
     , Just "intersection-1"
-    , Just (\vars -> if isTrue "high-schoolers-gone" vars then setVars [SetBool "done-with-kids" True] vars else setVars [] vars)
-    , Just (\vars -> Dict.get "talked-to-kids" vars.bool /= Just True)
+    , Just (\vars -> if isTrue "high-schoolers-gone" vars && not (isTrue "has-candy" vars) then setVars [SetBool "done-with-kids" True] vars else setVars [] vars)
+    , Just (\vars -> isTrue "has-candy" vars || Dict.get "talked-to-kids" vars.bool /= Just True)
     )
   , ("\"Sorry, not yet.\""
     , Just "intersection-1"
@@ -830,7 +868,7 @@ The sniffling kid looks up at her hopefully. "W-would you really?"
   , ("\"About that...\""
     , Just "we-lost-them"
     , Nothing
-    , Just (\vars -> isTrue "talked-to-kids" vars && isTrue "high-schoolers-gone" vars)
+    , Just (\vars -> isTrue "talked-to-kids" vars && isTrue "high-schoolers-gone" vars && not (isTrue "has-candy" vars))
     )
   ] True |> label "talk-to-kids" |> onLeave (setVars [SetBool "talked-to-kids" True])
 
@@ -843,7 +881,7 @@ You tell the kids that you think you found the high schoolers who took it, but y
 """
   [ ("Give them some of your own candy."
     , Just "give-some-candy"
-    , Just <| setVars [add "morality" 5, UpdateNum "candy" (Maybe.map (\n -> if n - 100 < 0 then 0 else n - 100))]
+    , Just <| setVars [add "morality" 6, UpdateNum "candy" (Maybe.map (\n -> if n - 100 < 0 then 0 else n - 100))]
     , Just (\vars -> (Dict.get "candy" vars.num |> Maybe.withDefault 0) > 0)
     )
   , ("Return to intersection."
@@ -868,7 +906,7 @@ The quiet kid nods appreciatively but says nothing.
 
 "Why, thank you!" Arlene says, surprised by the gift. "I hardly require compensation, but who can turn down candy?" She tips the girl a wink, and the younger girl giggles.
 
-The kids says goodbye and run off down the street to continue trick or treating.
+The kids say goodbye and run off down the street to continue trick or treating.
 """ |> contentBlock |> label "return-childrens-candy" |> goto "intersection-1" |> onLeave (setVars [SetBool "done-with-kids" True])
 
 block42_2 = """
@@ -884,7 +922,7 @@ The quiet kid nodes appreciatively but says nothing.
 """ |> contentBlock |> label "give-some-candy" |> goto "intersection-1" |> onLeave (setVars [SetBool "done-with-kids" True])
 
 block43 = choiceBlock """
-You walk down the street to the left and see a group of teens up ahead. They sitting on a curb, covered in shaving cream, and snickering between mouthfuls of candy. None of them appear to being wearing costume, but they have three childish looking trick-or-treat bags between them. You get the feeling the bags aren't theirs.
+You walk down the street to the left and see a group of teens up ahead. They are sitting on a curb, covered in shaving cream and snickering between mouthfuls of candy. None of them appear to be wearing costume, but they have three childish looking trick-or-treat bags between them. You get the feeling the bags aren't theirs.
 
 "These kids look like trouble," Arlene says, grinning. "Shall we see what they're up to?"
 """
@@ -908,12 +946,12 @@ block44 = choiceBlock ""
     )
   , ("\"Correct\" the situation. *(take back candy)*"
     , Just "correct-the-situation"
-    , Nothing
+    , Just (\vars -> if isTrue "let-bully-go" vars then setVars [SetString "bully-ditches-your-candy" "", SetString "bully-ditches-your-candy" "The kid who stole your candy even yanks it out of his pocket and throws it at the ground in front of him."] vars else setVars [SetString "bully-ditches-your-candy" ""] vars)
     , Just (\vars -> isTrue "talked-to-kids" vars && not (isTrue "chased-bully" vars))
     )
   , ("Egg the school."
     , Just "egg-the-school"
-    , Just <| setVars [add "morality" (-5)]
+    , Just <| setVars [add "morality" (-6)]
     , Just (\vars -> isTrue "chased-bully" vars || (not (isTrue "talked-to-kids" vars) && not (isTrue "bully-snatched-candy" vars)))
     )
   , ("Confront them about their potentially stolen candy."
@@ -990,13 +1028,283 @@ block45 = """
 You return to the area where the high schoolers were hanging out, but there's no one here. Strange that they wouldn't sit around and wait for a total stranger to come back.
 """ |> contentBlock |> label "high-schoolers-gone" |> goto "intersection-1" |> onLeave (setVars [SetBool "high-schoolers-gone" True])
 
-goHome = conditionalTextBlock
-  [ (.bool, "done-with-everything", True, """
-You head home after a successful night of trick or treating to eat your newfound stash of candy.
+block46 = choiceBlock """
+"Well," Arlene says, drawing out the word in a way that suggests she has an ultimatum coming up. "Egging the school *does* sound like fun, but I have one teensy little concern." She pinches her forefinger and thumb together as she says "teensy."
+
+Henry raises an eyebrow. "Oh yeah, and what might that be?"
+
+"Those bags of candy." She nods towards the colorful trick or treat bags. "They don't quite fit your image. They wouldn't happen to be stolen by any chance, would they?"
+
+"Ha! Look at this, boys," Henry says, raising and open palm towards Arlene. "We got a regular detective here." The group chortles, and Henry returns his gaze to Arlene. "As a matter of fact, we nabbed 'em from a couple of brats down the street. What of it?"
+
+"Oh, nothing much. I'm afraid I just wouldn't feel right galavanting with a bunch of candy stealing bullies."
+
+"What did you call us?" Henry growls. Somehow, he doesn't seem to think stealing candy from "a couple brats" counts as being a bully.
+
+"Oh, I apologize if I was unclear," Arlene says. Her smile gives away how much she is enjoying getting under Henry's skin. "I called you bullies. Now, if you would kindly return that candy..."
+
+"SHUT UP!" Henry thunders. "I thought you were cool, but clearly you're both little twerps just like those kids." He looks to his posse. "Let's show 'em not to mess with us, boys!" There is a roar of agreement, and now a group of high school seniors are charging at you and Arlene.
+
+5 v 2. Seems fair.
+"""
+  [ ("Stay and fight."
+    , Just "stay-and-fight"
+    , Nothing
+    , Nothing
+    )
+  , ("Run like a wimp."
+    , Just "run-from-fight"
+    , Nothing
+    , Nothing
+    )
+  ] True |> label "take-back-candy"
+
+block47 = conditionalTextBlock
+  [ (.bool, "chased-bully", True, """
+Your plan is to take the three on the left and give Henry and the punk you chased down to Arlene, but things don't go quite as you planned. In fact, they go much better. The punk you chased down wimps out and flees as soon he sees you and Arlene aren't afraid of the fight. So, it turns into a 4 v 2.
+
+A fist flies towards your face and you barely dodge to the side, your leg still extended so the bully trips over it and stumbles past you. Then the other one is oncoming. He gets a shot in at your ribs, but entirely fails to protect the spot you were aiming for. This happens to be his face, and he topples to the ground, out cold. Nice hook!
+
+Next to you, Arlene seems to be having no trouble with Henry and the other one. In fact, she is laughing too hard to actually hit them. Henry's face is burning red as he swings at Arlene again. But his buddy goes in for Arlene at the same moment and takes Henry's fist to the back of his head. He stumbles back dazed.
+
+The bully that stumbled behind you grabs you in a chokehold as you are watching Arlene. Maybe you should be paying more attention? But that's okay because Arlene is paying attention. She ducks another of Henry's frenzied punches and shoves him backwards. He slams into a tree and proceeds to start crying. Not so tough now.
+
+Seeing Henry downed, the guy holding onto your neck lets go and runs to get Henry up. It looks like the fight is over.
+
+"I'll be taking these," Arlene says, as she scoops up the candy bags. "Well, wasn't that fun?" she says to you. "Here, hold on to the candy." She hands you the children's candy.
+
+You leave the dazed bullies in the intersection.
   """)
   ]
   """
-"What?" Arlene exclaims. "You want to go home *already*? B-but it's so early!" A portal opens next to her, and she sighs. "This again... I supposed that means it really is time to head back. Well, I will see you back at the party then." She steps into the portal and disappears.
+The odds look pretty bad as five high school seniors charge at you, but these daunting odds don't seem to phase Arlene. She catches the frontmost one in the nose with an oddly powerful left hook. He staggers backwards, both hands on his bleeding nose, and flees the fight almost immediately. What a wimp.
 
-You head home after a rather short night of trick or treating. Maybe there is something you missed?
-  """ |> label "go-home" |> goto "game-over"
+A fist flies towards your face and you barely dodge to the side, your leg still extended so the bully trips over it and stumbles past you. Then the other one is oncoming. He gets a shot in at your ribs, but entirely fails to protect the spot you were aiming for. This happens to be his face, and he topples to the ground, out cold. Nice punch!
+
+Next to you, Arlene seems to be having no trouble with Henry and the other one. In fact, she is laughing too hard to actually hit them. Henry's face is burning red as he swings at Arlene again. But his buddy goes in for Arlene at the same moment and takes Henry's fist to the back of his head. He stumbles back dazed.
+
+The bully that stumbled behind you grabs you in a chokehold as you are watching Arlene. Maybe you should be paying more attention? But that's okay because Arlene is paying attention. She ducks another of Henry's frenzied punches and shoves him backwards. He slams into a tree and proceeds to start crying. Not so tough now.
+
+Seeing Henry downed, the guy holding onto your neck lets go and runs to get Henry up. It looks like the fight is over.
+
+"I'll be taking these," Arlene says, as she scoops up the candy bags. "Well, wasn't that fun?" she says to you. "Here, hold on to the candy." She hands you the children's candy.
+
+You leave the dazed bullies in the intersection.
+"""
+  |> label "stay-and-fight" |> goto "intersection-1" |> onLeave (setVars [SetBool "has-candy" True, SetBool "high-schoolers-gone" True])
+
+block48 = """
+As soon as the going gets rough, you flee the fight. Arlene looks from you to the charging bullies, distressed. After a moment, she turns around and catches up with you. The bullies are too busy laughing and jeering to bother chasing.
+
+"Aww, come on!" Arlene complains, when you stop a safe distance away. "We totally could have taken them."
+
+You remind her that it was five of them versus only you two, but that doesn't change Arlene's opinion.
+
+"Well, I guess we won't be able to get that candy back," Arlene sighs.
+""" |> contentBlock |> label "run-from-fight" |> goto "intersection-1" |> onLeave (setVars [SetBool "has-candy" False, SetBool "high-schoolers-gone" True])
+
+
+block49 = """
+"Pardon me," Arlene says, cutting off the high schoolers' laughter. "Sorry to interrupt that raucous noise you're making, but I believe you have some candy that doesn't belong to you."
+
+"Is that so?" Henry asks, threateningly. "And what do you propose we do with that candy, sweetcheeks?"
+
+"Well," Arlene says irritably, "I *was* going to suggest simply returning it, but I am quite tired of listening to your nicknames for me. I think I'd rather punch that ugly mouth they keep spewing out of." Before anyone has a moment to react, Arlene closes in on Henry and catches him in the mouth with an unexpectedly strong left hook. Her fist connects with a wet cracking sound, and Henry staggers back, his mouth bloodied and suddenly down two teeth.
+
+"Ge' her! Ge' her!" he screams through his cupped hand. But none of his friends seem too interested in taking up the fight. They take a couple steps back.
+
+"Boo!" Arlene yells, lunging forward. The high schoolers take off, leaving the candy behind. {{bully-ditches-your-candy}} Henry casts you both one last dirty glance and runs to catch up with his posse.
+
+You pick up the candy that was left behind.
+""" |> contentBlock |> label "correct-the-situation" |> goto "intersection-1" |> onLeave (setVars [SetBool "has-candy" True, SetBool "high-schoolers-gone" True])
+
+block50 = choiceBlock """
+Despite some concern that the bags of candy don't belong to the high schoolers, you let it go in favor of good, old-fashioned mischief. And, if you wanted to get that candy later, that would be unfortunate because on the way to the school, one of the teens splits up to drop the candy off at his house, promising to meet you at the school.
+
+The remaining group of teens lead you and Arlene down a couple blocks until you arrive at a large, brown building with three rows of regularly spaced windows running along its sides. The parking lot is deserted, and the teens pull out a couple large crates of eggs from a backpack. The other arrives just as the first egg is about to be thrown. He is carrying an entire arsenal of toilet paper and shaving cream.
+
+You and Arlene gladly join these hooligans in attempting to have at least one egg splattered on every window as well as mummifying every tree.
+
+However, in the middle of your fun, the cops show up. Figures.
+
+A pudgy officer steps out of the police car alongside his incredibly fit partner.
+
+Arlene looks at the stain on the pudgy officer's shirt and mutters, "Uh oh..."
+
+"Hey!" the pudgy one shouts. "You kids stop that immediately and don't move!"
+
+Apparently, the group of teens you fell in with aren't the most obedient crowd (I know, I'm surprised too) because instead of not moving, they take off towards the wooded area behind the school. Henry yells, "Follow us! We know a way out of here! Just gotta hop the fence!"
+
+"Not the fence!" growls the pudgy cop. "Damn them. They know my weakness."
+
+"Oh, my. Such a predicament! What shall we do, Reader?" Arlene asks, excitedly.
+"""
+  [ ("Follow the group."
+    , Just "follow-the-group"
+    , Just (setVars [add "morality" (-2)])
+    , Nothing
+    )
+  , ("Split up and run with Arlene."
+    , Just "split-up"
+    , Just (setVars [add "morality" (-2)])
+    , Nothing
+    )
+  , ("Turn yourself in."
+    , Just "turn-yourself-in"
+    , Just (setVars [add "morality" 15])
+    , Nothing
+    )
+  , ("Assault the cops."
+    , Just "assault-the-cops"
+    , Just (setVars [add "morality" (-50)])
+    , Nothing
+    )
+  ] True |> label "egg-the-school"
+
+block51 = conditionalTextBlock
+  [(.string, "reader-costume", "godzilla", """
+You and Arlene follow the teens with the cops chasing close behind, calling for you to stop immediately. The group runs into the woods and weaves this way and that until you all arrive at a tall, mesh fence. You have put some distance between yourselves and the cops, but not much.
+
+The teens climb quickly over the fence and call for you to hurry up. And you would absolutely love to hurry up except you forgot you wore that ridiculous Godzilla costume and have absolutely no hope of getting over the tall fence, even with Arlene trying her best to help you. Realizing you are out of options, you begin stripping the costume off, piece by piece.
+
+Unfortunately, you are a bit too slow and end up standing in front of a bunch of angry cops in your underwear. Woops.
+  """)]
+  """
+You and Arlene follow the teens with the cops chasing close behind, calling for you to stop immediately. The group runs into the woods and weaves this way and that until you all arrive at a tall, mesh fence. You have put some distance between yourselves and the cops, but not much.
+
+The teens climb quickly over the fence and call for you to hurry up. You hop over the fence after them, and they lead you a roundabout way back out of the forest. The cops are left far behind you.
+
+"You guys are pretty cool," Henry says, patting you amiably on the back. There is a murmur of agreement among the teens. "Look, we're gonna head out for the night, but look for us next year, alright?"
+
+With that, the group disperses.
+
+Arlene turns to you with a big smile on her face. "So. Worth it."
+  """
+  |> label "follow-the-group"
+  |> \b ->
+    { b |
+      next <- (\vars -> if Dict.get "reader-costume" vars.string == Just "godzilla" then Label "game-over" else Label "intersection-1"),
+      onLeave <- (\vars -> if Dict.get "reader-costume" vars.string == Just "godzilla" then setVars [SetString "game-over-text" "Congratulations! You got arrested. You also stripped in front of Arlene. Awkward.", SetBool "high-schoolers-gone" True] vars else setVars [SetBool "high-schoolers-gone" True] vars)
+    }
+
+block52 = """
+You and Arlene split up from the group and make a break for it on your own. The cops split up too, the fit one running after the teens and the pudgy one following close behind you. Well, he was close at least. At some point, he must have run out of breath because he is no longer anywhere in sight.
+
+"Oh, my. That man really needs to hit the gym," Arlene giggles.
+""" |> contentBlock |> goto "intersection-1" |> label "split-up" |> onLeave (setVars [SetBool "high-schoolers-gone" True])
+
+block53 = """
+You raise both your hands into the air and approach the cops, apologizing profusely for your heinous crimes against a window. Arlene watches you get arrested, dumbfounded. Eventually, she just walks away shaking her head. You'll probably see her once you get back to the Party. You know, after your parents pick you up from the police station.
+"""
+  |> contentBlock
+  |> goto "game-over"
+  |> label "turn-yourself-in"
+  |> onLeave
+    (setVars [
+      SetBool "high-schoolers-gone" True,
+      SetString "game-over-text" "You turned yourself in. Uhh... good job, I guess?"
+    ])
+
+block54 = """
+You charge at the cops, screaming incoherently and foaming from the mouth. They pull out their guns, but that doesn't stop you. Well, not until they pull the trigger.
+"""
+  |> contentBlock
+  |> goto "game-over"
+  |> label "assault-the-cops"
+  |> onLeave
+    (setVars [
+      SetBool "high-schoolers-gone" True,
+      SetString "game-over-text" "Congratulations! You got shot in the face.",
+      SetString "game-over-text-2" "No, seriously. You assaulted two men just trying to do their jobs. You are an awful person."
+    ])
+
+goHome =
+  choiceBlock ""
+    [ ("Go home. *(This is it. Night's over.)*"
+      , Just "go-home-confirmed"
+      , Nothing
+      , Just (.bool >> Dict.get "has-candy" >> Maybe.withDefault False >> not)
+      )
+    , ("Go home and keep children's candy. *(This is it. Night's over. And you're a jerk.)*"
+      , Just "go-home-confirmed"
+      , Just (setVars [add "candy" 967, add "morality" (-7)])
+      , Just (.bool >> Dict.get "has-candy" >> Maybe.withDefault False)
+      )
+    , ("Return to trick or treating."
+      , Just "intersection-1"
+      , Nothing
+      , Just (.bool >> Dict.get "done-with-everything" >> Maybe.withDefault False >> not)
+      )
+    ] True
+    |> label "go-home"
+    |> \b ->
+      { b |
+        contentGenerator <- (\_ vars _ ->
+          let locations = ["high-schoolers-gone", "done-with-kids", "done-with-old-lady", "visited-park", "visited-creepy-music-house", "visited-house-with-scarecrow", "visited-down-road"]
+              completion = List.length <| List.filter identity <| List.map (flip Dict.get vars.bool >> Maybe.withDefault False) locations
+              completionText =
+                  if | completion == 0 -> goHome_completion_0
+                     | completion < 5 -> goHome_completion_1
+                     | completion < 7 -> goHome_completion_2
+                     | otherwise -> ""
+              returnCandyText = if (Dict.get "has-candy" vars.bool |> Maybe.withDefault False) then goHome_return_candy else ""
+          in Markdown.toHtml <| completionText ++ returnCandyText
+        )
+      }
+
+goHome_completion_0 = """
+You tell Arlene that you're ready to head home for the night.
+
+"What?" Arlene exclaims. "We literally *just* got here. A-are you sure you don't want to stay a little longer?" she asks.
+"""
+
+goHome_completion_1 = """
+You tell Arlene that you're ready to head home for the night.
+
+"You want to go home *already*? B-but there's so much still to do!" she exclaims.
+"""
+
+goHome_completion_2 = """
+You tell Arlene that you're ready to head home for the night.
+
+"Ahh, I was hoping to do a little more trick or treating, but I suppose we *did* cover a lot of ground," she says. You can hear in her tone that she'd like to stick around a bit longer.
+"""
+
+goHome_return_candy = """ "Oh, I nearly forgot," Arlene continues. "You're still holding onto that candy for those kids, right? Shall we return it before heading back?"
+"""
+
+goHomeConfirmed =
+   { emptyStoryBlock |
+      contentGenerator <- (\_ vars _ ->
+        let locations = ["high-schoolers-gone", "done-with-kids", "done-with-old-lady", "visited-park", "visited-creepy-music-house", "visited-house-with-scarecrow", "visited-down-road"]
+            completion = List.length <| List.filter identity <| List.map (flip Dict.get vars.bool >> Maybe.withDefault False) locations
+            stoleCandy = (Dict.get "has-candy" vars.bool |> Maybe.withDefault False)
+            goHomeText =
+                if | completion < 7 && stoleCandy -> go_home_confirmed_disapointing_stolen_candy
+                   | completion < 7 && not stoleCandy -> go_home_confirmed_disapointing
+                   | completion >= 7 && stoleCandy -> go_home_confirmed_stolen_candy
+                   | otherwise -> go_home_good_ending
+        in Markdown.toHtml <| goHomeText
+      ),
+      onLeave <- (\vars ->
+        if (Dict.get "has-candy" vars.bool |> Maybe.withDefault False)
+        then setVars [SetString "game-over-text" "Congratulations! You actually stole candy from children. Quite a lot of it, at that. Ever hear the expression \"stealing candy from a baby\"? Yeah, you pretty much did that. Jerk.", SetString "game-over-text-2" "But you're still a candy-stealing meanie."] vars
+        else setVars [] vars
+      )
+    } |> label "go-home-confirmed" |> goto "game-over"
+
+go_home_confirmed_disapointing = """
+A portal opens beside Arlene, and she sighs. "Oh, dear. This again... I guess this means the night really is over. I shall see you back at the Party, I suppose!" She steps into the portal and disappears.
+"""
+
+go_home_confirmed_stolen_candy = """
+"Well, then!" Arlene huffs. "I didn't realize you were such a jerk! Stealing candy from children... of all the things." A portal opens beside her, and she steps into it without looking back. Ouch.
+"""
+
+go_home_confirmed_disapointing_stolen_candy = """
+A portal opens beside Arlene, and she sighs. "Oh, dear. This again... I guess this means the night really is over... Well, that is quite alright. I should rather end the night early than continue trick or treating with someone who steals candy from children. Hmph." She steps into the portal and disappears.
+"""
+
+go_home_good_ending = """
+A portal opens beside Arlene, and she sighs. "Oh, dear. This again... I guess this means the night really is over. Well, I had a lot of fun! I think I shall remember this night for quite some time." She moves towards the portal, pokes a hesitant finger into it, then looks back at you. "See you back at the Party!" With that, she disappears into the rift.
+"""
