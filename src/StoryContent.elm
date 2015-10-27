@@ -204,7 +204,7 @@ countdown_block08 = [
   ]
 
 block09 = """
-THREE!
+"THREE!"
 
 She grabs your arm as she dives into the swirling mass of the portal, pulling you in alongside her. You tumble in head first, and the force of the portal hurls you onward so harshly that it feels as if it will turn you inside out. Streaks of purple and orange dart around you, flashing into existence in one instant, flitting playfully around your head, and blinking out into the blackness of the portal in the next. In the distance, you can see shooting stars, except the stars aren't moving at all. Galaxies fly past, and your ears pound with the utter, discordant loudness of the abyss as it pulls you through. You hear screaming and laughing and howling and growling, all fading in and out in a clashing choir of Halloween fun.
 
