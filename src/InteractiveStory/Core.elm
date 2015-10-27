@@ -33,7 +33,7 @@ import Regex
 
 import InteractiveStory.Sound as Sound
 
-import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom)
+import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom, bodyDiv)
 
 import Animation exposing (Animation)
 import AnimationWrapper as AW
@@ -357,7 +357,7 @@ render address model =
         scrollData = model.scrollData
     in Html.Lazy.lazy2
         div
-            [ class "interactive-story-container", style <| fullscreen [], onScroll address UserScroll ]
+            [ class "interactive-story-container", style <| bodyDiv <| fullscreen [], onScroll address UserScroll ]
            ([ div
                 [ style <| topBar { scrollData | scrollTop <- 0 } model.windowWidth [] ]
                 [ div
