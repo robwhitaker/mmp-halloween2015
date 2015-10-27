@@ -658,12 +658,12 @@ You look up and see a big dog in front of you, growling and baring its gigantic,
 
 block34 = conditionalTextBlock
   [ (.string, "reader-costume", "godzilla", """
-You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too phased by the idea of being torn apart. You, on the other hand...
+You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
 
 You two arrive at the fence to the park, and Arlene hops over no problem. You, however, forgot that you chose the most unwieldy costume ever and now realize that you can't make it over the fence. Sonny Jim pounces.
     """)
   ] """
-You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too phased by the idea of being torn apart. You, on the other hand...
+You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
 
 You two arrive at the fence to the park and hop over. Sonny Jim is left barking at you from the other side. You return to the street.
   """
@@ -1077,7 +1077,7 @@ You leave the dazed bullies in the intersection.
   """)
   ]
   """
-The odds look pretty bad as five high school seniors charge at you, but these daunting odds don't seem to phase Arlene. She catches the frontmost one in the nose with an oddly powerful left hook. He staggers backwards, both hands on his bleeding nose, and flees the fight almost immediately. What a wimp.
+The odds look pretty bad as five high school seniors charge at you, but these daunting odds don't seem to faze Arlene. She catches the frontmost one in the nose with an oddly powerful left hook. He staggers backwards, both hands on his bleeding nose, and flees the fight almost immediately. What a wimp.
 
 A fist flies towards your face and you barely dodge to the side, your leg still extended so the bully trips over it and stumbles past you. Then the other one is oncoming. He gets a shot in at your ribs, but entirely fails to protect the spot you were aiming for. This happens to be his face, and he topples to the ground, out cold. Nice punch!
 
