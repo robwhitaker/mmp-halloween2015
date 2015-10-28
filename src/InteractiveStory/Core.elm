@@ -33,7 +33,7 @@ import Regex
 
 import InteractiveStory.Sound as Sound
 
-import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom)
+import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom, bodyDiv, topBarBanner, instructionBlock, linkArea, link)
 
 import Animation exposing (Animation)
 import AnimationWrapper as AW
@@ -60,7 +60,8 @@ type alias Model = {
     scrollData           : ScrollEvent,
     scrollAnimation      : AW.AnimationWrapper,
     chunkSize            : Int,
-    chunkingThreshold    : Int
+    chunkingThreshold    : Int,
+    instructionText      : String
 }
 
 type alias AnimationState = { prevClockTime : Float, elapsedTime : Float, animation : Animation }
@@ -91,6 +92,7 @@ init inputList audioList =
         , scrollAnimation = AW.empty
         , chunkSize = 10
         , chunkingThreshold = 5
+        , instructionText = ""
         }
         |> \(model, effects) -> (model, Effects.batch [preloadAudio, effects])
 
@@ -203,11 +205,22 @@ progressToNewBlockWith progressFn initialRun model =
     |> skipIfInitialRun initialRun (handleEffectSet (\m -> m.storyTrack.selected.onLeave m.vars))
     |> progressFn model.vars -- decide on progression with the last set of vars since onLeave should be after transitioning
     |> (handleEffectSet (\m -> m.storyTrack.selected.onEnter m.vars))
+    |> updateInstructions
     |> initStoryBlock
     |> animateBlockIn
     |> applyChunking
     |> skipIfInitialRun initialRun scrollToBlock
     |> skipIfInitialRun initialRun (removeRepeatBlocks model)
+
+updateInstructions (model, effects) =
+    let
+        block = model.storyTrack.selected
+        newInstr =
+            if  | block.next model.vars == Stop ->
+                    if block.choiceModel == Nothing then "End."
+                    else "Select an option to proceed."
+                | otherwise -> "Click anywhere to proceed."
+    in ({model | instructionText <- newInstr}, effects)
 
 skipIfInitialRun initialRun f = if initialRun then identity else f
 
@@ -357,12 +370,13 @@ render address model =
         scrollData = model.scrollData
     in Html.Lazy.lazy2
         div
-            [ class "interactive-story-container", style <| fullscreen [], onScroll address UserScroll ]
+            [ class "interactive-story-container", style <| bodyDiv <| fullscreen [], onScroll address UserScroll ]
            ([ div
                 [ style <| topBar { scrollData | scrollTop <- 0 } model.windowWidth [] ]
                 [ div
                     [ style <| fixed <| topBar model.scrollData model.windowWidth [] ]
-                    []
+                    [ img [src "assets/images/banner2.png", style <| topBarBanner model.scrollData model.windowWidth []] []
+                    ]
                 ]
             , div
                 [
@@ -388,7 +402,11 @@ render address model =
                 [SB.render address True model.vars model.storyTrack.selected]
             )
             ++
-            [ div [style <| spacer model.windowHeight []] [] ]
+            [ div [style <| instructionBlock model.scrollData []] [ text model.instructionText ]
+            , div [style <| linkArea []]
+                [ a [ href "/index.html", target "_blank", style <| link []] [text " [ Return to Foyer ] "] ]
+            , div [style <| spacer (round <| toFloat model.windowHeight/1.4) []] []
+            ]
            )
 
 getChunkBlockHeight : List Chunk -> Float

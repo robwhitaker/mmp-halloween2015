@@ -204,7 +204,7 @@ countdown_block08 = [
   ]
 
 block09 = """
-THREE!
+"THREE!"
 
 She grabs your arm as she dives into the swirling mass of the portal, pulling you in alongside her. You tumble in head first, and the force of the portal hurls you onward so harshly that it feels as if it will turn you inside out. Streaks of purple and orange dart around you, flashing into existence in one instant, flitting playfully around your head, and blinking out into the blackness of the portal in the next. In the distance, you can see shooting stars, except the stars aren't moving at all. Galaxies fly past, and your ears pound with the utter, discordant loudness of the abyss as it pulls you through. You hear screaming and laughing and howling and growling, all fading in and out in a clashing choir of Halloween fun.
 
@@ -365,9 +365,9 @@ You follow the big-eyed Arlene down the street until she abruptly stops in front
 
 
 block18 = choiceBlock """
-You approach the house with the scarecrow. It is holding a bowl of candy in its lap with a sign that reads, "Please take 2. Happy Halloween!" Perched menacingly above the bowl is a half-decayed zombie hand. You have an idea what'll happen if you reach in for the candy.
+You approach the house with the scarecrow. It is holding a bowl of candy in its lap with a sign that reads, "Please take two. Happy Halloween!" Perched menacingly above the bowl is a half-decayed zombie hand. You have an idea what'll happen if you reach in for the candy.
 """
-  [ ("Reach for the candy *(take 2)*."
+  [ ("Reach for the candy *(take two)*."
     , Just "post-candy-bowl"
     , Just (always {emptyEffectSet | variableEdits <- [SetString "scarecrow-took-candy" "two", add "morality" 1, add "candy" 2]})
     , Nothing
@@ -387,14 +387,14 @@ block19 = conditionalTextBlock [
   (.string, "scarecrow-took-candy", "two", """
 You tentatively poke your hand into the candy bowl. Your hand lands on a couple pieces of candy below the hovering zombie fingers, and you pick up two. Just as you are about convinced nothing is going to happen, the zombie hand clamps down on yours with a terrible growl from a little speaker on the side of the bowl. You snatch your hand back with your two pieces of candy while Arlene cackles with delight.
 
-"Goodness, you are so obedient, Reader!" she says, moving towards the bowl herself. She digs her whole hand into the bowl and giggles as the undead claw grabs and growls at her. She pulls out an entire handful of candy and dumps it into her bag. Then she goes back for a second. "They did say 'Take 2'." She smiles shamelessly.
+"Goodness, you are so obedient, Reader!" she says, moving towards the bowl herself. She digs her whole hand into the bowl and giggles as the undead claw grabs and growls at her. She pulls out an entire handful of candy and dumps it into her bag. Then she goes back for a second. "They did say 'Take two'." She smiles shamelessly.
 
 You both head back to the street.
   """),
   (.string, "scarecrow-took-candy", "handful", """
 You dig your whole hand into the candy bowl, and the zombie fingers clamp down on your own with a terrible growl from a speaker on the side of the bowl. When it lets go, you pull out a whole handful of candy and dump it into your bag.
 
-"My, my, Reader. Such a rebel. It says to please take 2." She casts you a mischievous smile and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. Then, she returns for another handful. "There, that's two."
+"My, my, Reader. Such a rebel. It says to please take two." She casts you a mischievous smile and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. Then, she returns for another handful. "There, that's two."
 
 You both head back to the street.
   """),
@@ -658,12 +658,12 @@ You look up and see a big dog in front of you, growling and baring its gigantic,
 
 block34 = conditionalTextBlock
   [ (.string, "reader-costume", "godzilla", """
-You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too phased by the idea of being torn apart. You, on the other hand...
+You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
 
 You two arrive at the fence to the park, and Arlene hops over no problem. You, however, forgot that you chose the most unwieldy costume ever and now realize that you can't make it over the fence. Sonny Jim pounces.
     """)
   ] """
-You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too phased by the idea of being torn apart. You, on the other hand...
+You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
 
 You two arrive at the fence to the park and hop over. Sonny Jim is left barking at you from the other side. You return to the street.
   """
@@ -1077,7 +1077,7 @@ You leave the dazed bullies in the intersection.
   """)
   ]
   """
-The odds look pretty bad as five high school seniors charge at you, but these daunting odds don't seem to phase Arlene. She catches the frontmost one in the nose with an oddly powerful left hook. He staggers backwards, both hands on his bleeding nose, and flees the fight almost immediately. What a wimp.
+The odds look pretty bad as five high school seniors charge at you, but these daunting odds don't seem to faze Arlene. She catches the frontmost one in the nose with an oddly powerful left hook. He staggers backwards, both hands on his bleeding nose, and flees the fight almost immediately. What a wimp.
 
 A fist flies towards your face and you barely dodge to the side, your leg still extended so the bully trips over it and stumbles past you. Then the other one is oncoming. He gets a shot in at your ribs, but entirely fails to protect the spot you were aiming for. This happens to be his face, and he topples to the ground, out cold. Nice punch!
 
@@ -1167,7 +1167,7 @@ You and Arlene follow the teens with the cops chasing close behind, calling for 
 
 The teens climb quickly over the fence and call for you to hurry up. And you would absolutely love to hurry up except you forgot you wore that ridiculous Godzilla costume and have absolutely no hope of getting over the tall fence, even with Arlene trying her best to help you. Realizing you are out of options, you begin stripping the costume off, piece by piece.
 
-Unfortunately, you are a bit too slow and end up standing in front of a bunch of angry cops in your underwear. Woops.
+Unfortunately, you are a bit too slow and end up standing in front of two angry cops in your underwear. Woops.
   """)]
   """
 You and Arlene follow the teens with the cops chasing close behind, calling for you to stop immediately. The group runs into the woods and weaves this way and that until you all arrive at a tall, mesh fence. You have put some distance between yourselves and the cops, but not much.

@@ -16,7 +16,7 @@ import InteractiveStory.VariableModel exposing (VariableModel)
 import InteractiveStory.StoryBlockAction as SBAction
 --import InteractiveStory.Sound as Sound
 
-import InteractiveStory.Styles.Core exposing (storyBlock, animateIn, storyBlockAnimation, choiceBlockChoice)
+import InteractiveStory.Styles.Core exposing (storyBlock, animateIn, storyBlockAnimation, choiceBlockChoice, noPad)
 
 import Animation
 import AnimationWrapper as AW
@@ -213,7 +213,7 @@ choicesToHtmlList address isActive selection showChosen vars choices =
                 [ onClick address <| Batch actionList
                 , onMouseEnter address <| StoryBlockAction (SBAction.ChoiceSelect (Just index))
                 , onMouseLeave address <| StoryBlockAction (SBAction.ChoiceSelect Nothing)
-                , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ text vars ]
+                , style <| choiceBlockChoice (Just index == selection) isActive [] ] [ div [style <| noPad []] [text vars] ]
         else li
             [ onClick address NoOp
             , onMouseEnter address NoOp
