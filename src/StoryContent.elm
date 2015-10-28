@@ -365,9 +365,9 @@ You follow the big-eyed Arlene down the street until she abruptly stops in front
 
 
 block18 = choiceBlock """
-You approach the house with the scarecrow. It is holding a bowl of candy in its lap with a sign that reads, "Please take 2. Happy Halloween!" Perched menacingly above the bowl is a half-decayed zombie hand. You have an idea what'll happen if you reach in for the candy.
+You approach the house with the scarecrow. It is holding a bowl of candy in its lap with a sign that reads, "Please take two. Happy Halloween!" Perched menacingly above the bowl is a half-decayed zombie hand. You have an idea what'll happen if you reach in for the candy.
 """
-  [ ("Reach for the candy *(take 2)*."
+  [ ("Reach for the candy *(take two)*."
     , Just "post-candy-bowl"
     , Just (always {emptyEffectSet | variableEdits <- [SetString "scarecrow-took-candy" "two", add "morality" 1, add "candy" 2]})
     , Nothing
@@ -387,14 +387,14 @@ block19 = conditionalTextBlock [
   (.string, "scarecrow-took-candy", "two", """
 You tentatively poke your hand into the candy bowl. Your hand lands on a couple pieces of candy below the hovering zombie fingers, and you pick up two. Just as you are about convinced nothing is going to happen, the zombie hand clamps down on yours with a terrible growl from a little speaker on the side of the bowl. You snatch your hand back with your two pieces of candy while Arlene cackles with delight.
 
-"Goodness, you are so obedient, Reader!" she says, moving towards the bowl herself. She digs her whole hand into the bowl and giggles as the undead claw grabs and growls at her. She pulls out an entire handful of candy and dumps it into her bag. Then she goes back for a second. "They did say 'Take 2'." She smiles shamelessly.
+"Goodness, you are so obedient, Reader!" she says, moving towards the bowl herself. She digs her whole hand into the bowl and giggles as the undead claw grabs and growls at her. She pulls out an entire handful of candy and dumps it into her bag. Then she goes back for a second. "They did say 'Take two'." She smiles shamelessly.
 
 You both head back to the street.
   """),
   (.string, "scarecrow-took-candy", "handful", """
 You dig your whole hand into the candy bowl, and the zombie fingers clamp down on your own with a terrible growl from a speaker on the side of the bowl. When it lets go, you pull out a whole handful of candy and dump it into your bag.
 
-"My, my, Reader. Such a rebel. It says to please take 2." She casts you a mischievous smile and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. Then, she returns for another handful. "There, that's two."
+"My, my, Reader. Such a rebel. It says to please take two." She casts you a mischievous smile and digs her whole hand into the bowl, giggling when the undead claw grabs and growls at her. Then, she returns for another handful. "There, that's two."
 
 You both head back to the street.
   """),
@@ -1167,7 +1167,7 @@ You and Arlene follow the teens with the cops chasing close behind, calling for 
 
 The teens climb quickly over the fence and call for you to hurry up. And you would absolutely love to hurry up except you forgot you wore that ridiculous Godzilla costume and have absolutely no hope of getting over the tall fence, even with Arlene trying her best to help you. Realizing you are out of options, you begin stripping the costume off, piece by piece.
 
-Unfortunately, you are a bit too slow and end up standing in front of a bunch of angry cops in your underwear. Woops.
+Unfortunately, you are a bit too slow and end up standing in front of two angry cops in your underwear. Woops.
   """)]
   """
 You and Arlene follow the teens with the cops chasing close behind, calling for you to stop immediately. The group runs into the woods and weaves this way and that until you all arrive at a tall, mesh fence. You have put some distance between yourselves and the cops, but not much.
