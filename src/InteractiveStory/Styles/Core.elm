@@ -35,11 +35,20 @@ bodyDiv styles =
 
 topBar : ScrollEvent -> Int -> Styles -> Styles
 topBar { scrollTop, scrollHeight, clientHeight } windowWidth styles =
+    let bgOpacity = (1 - (( animate (toFloat scrollTop) topBarAnimation ) / 200)) * 1.7
+    in
+        styles
+        |> Dimension.height ( animate (toFloat scrollTop) topBarAnimation )
+        |> Dimension.width (windowWidth-17) -- 17 is the width of the scroll bar
+        |> Gradient.linear 90 [rgba 0 0 0 (bgOpacity * 0), rgba 0 0 0 (bgOpacity * 0.7), rgba 0 0 0 (bgOpacity * 0.9), rgba 0 0 0 bgOpacity]
+        |> Border.color (rgba 0 0 0 1)
+        |> Position.zIndex 10
+
+topBarBanner { scrollTop, scrollHeight, clientHeight } windowWidth styles =
     styles
     |> Dimension.height ( animate (toFloat scrollTop) topBarAnimation )
-    |> Dimension.width (windowWidth-17) -- 17 is the width of the scroll bar
-    |> Background.color (rgba 0 0 0 0)
-    |> Position.zIndex 10
+    |> Display.display Display.Block
+    |> Margin.left ((toFloat windowWidth / 2 - 500) * (( animate (toFloat scrollTop) topBarAnimation2 )))
 
 fixed : Styles -> Styles
 fixed styles =
@@ -52,20 +61,37 @@ storyBlock styles =
     styles
     |> Css.style "margin" "15px auto"
     |> Text.color (rgba 200 200 200 1)
-    |> Font.size 22
+    |> Font.size 20
     |> Dimension.maxWidth 600
-    |> Background.color (rgba 0 0 0 0.3)
+    |> Gradient.linear 90 [rgba 0 0 0 0.6, rgba 0 0 0 0.3]
     |> Padding.all 5 15 5 15
     |> Border.color (rgba 0 0 0 1)
     |> Border.width 1 1 1 1
     |> Border.style BorderStyle.Solid
     |> Border.radius 5 5 5 5
 
+instructionBlock { scrollTop } =
+    Text.color (rgba 255 255 255 0.7)
+    >> Background.color (rgba 0 0 0 0.5)
+    >> Font.size 18
+    >> fixed
+    >> Position.right 20
+    -->> Position.left 0
+    -->> Position.top 5
+    -->> Position.top (20 - 20 * animate (toFloat scrollTop) topBarAnimation2)
+    >> Text.align Text.Center
+    >> Position.zIndex 100
+
+linkArea =
+    instructionBlock { scrollTop = 0 }
+    >> Position.top 30
+
+link = Text.color (rgba 135 50 0 1)
+
 animateIn : Time -> Styles -> Styles
 animateIn time styles =
     styles
     |> Position.position Position.Relative
-    -- |> Position.top (-20 + 20 * (animate time storyBlockAnimation))
     |> Css.style "opacity" (toString <| animate time storyBlockAnimation)
 
 spacer : Int -> Styles -> Styles
@@ -77,25 +103,28 @@ choiceBlockChoice : Bool -> Bool -> Styles -> Styles
 choiceBlockChoice selected isActive styles =
     let bgColor =
         if isActive then
-            if selected then (Background.color (rgba 144 53 0 1) >> ListStyle.image "assets/images/pumpkin-bullet.png")
-            else (Background.color (rgba 0 0 0 0) >> ListStyle.image "assets/images/empty-bullet.png")
+            if selected then Text.color (rgba 255 255 255 1) >> ListStyle.image "assets/images/pumpkin-bullet.png" >> Gradient.linear 0 [rgba 91 34 1 0, rgba 91 34 1 1, rgba 0 0 0 0]
+            else Text.color (rgba 200 200 200 0.9)
         else
-            if selected then (Background.color (rgba 144 53 0 0.4) >> ListStyle.image "assets/images/empty-bullet.png")
-            else (Background.color (rgba 0 0 0 0) >> ListStyle.image "assets/images/empty-bullet.png")
+            if selected then Text.color (rgba 200 200 200 1) >> ListStyle.image "assets/images/pumpkin-bullet-2.png" >> Gradient.linear 0 [rgba 0 0 0 0, rgba 91 34 1 1, rgba 0 0 0 0]
+            else Text.color (rgba 200 200 200 0.4) >> ListStyle.image "assets/images/empty-bullet.png"
     in
         styles
-        |> ListStyle.image "assets/images/empty-bullet.png"
         |> Border.radius 2 2 2 2
-        |> Padding.all 0.5 30 1 30
+        |> Padding.all 0 20 0 20
         |> Cursor.cursor (if isActive then Cursor.Pointer else Cursor.Default)
+        |> ListStyle.image "assets/images/pumpkin-bullet-2.png"
         |> bgColor
 
+noPad = Padding.all 0 0 0 0
 ---- ANIMATIONS ----
 
 topBarAnimationFrom = 200
 
 topBarAnimation : Animation
-topBarAnimation = animation 0 |> from topBarAnimationFrom |> to 50 |> duration 100 |> delay 50
+topBarAnimation = animation 0 |> from topBarAnimationFrom |> to 75 |> duration 350 |> delay 50
+
+topBarAnimation2 = animation 0 |> from 1 |> to 0 |> duration 350 |> delay 50
 
 storyBlockAnimation : Animation
 storyBlockAnimation = animation 0 |> from 0 |> to 1 |> duration (0.5 * Time.second)
