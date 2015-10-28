@@ -33,7 +33,7 @@ import Regex
 
 import InteractiveStory.Sound as Sound
 
-import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom, bodyDiv, topBarBanner, instructionBlock, linkArea, link)
+import InteractiveStory.Styles.Core exposing (fullscreen, topBar, fixed, spacer, topBarAnimationFrom, bodyDiv, topBarBanner, instructionBlock, linkArea, link, topBarImage, imgList)
 
 import Animation exposing (Animation)
 import AnimationWrapper as AW
@@ -375,7 +375,10 @@ render address model =
                 [ style <| topBar { scrollData | scrollTop <- 0 } model.windowWidth [] ]
                 [ div
                     [ style <| fixed <| topBar model.scrollData model.windowWidth [] ]
-                    [ img [src "assets/images/banner2.png", style <| topBarBanner model.scrollData model.windowWidth []] []
+                    [ div [ style <| topBarBanner model.scrollData model.windowWidth [] ]
+                        [ a [ href "/", target "_blank"]
+                            [ img [src "assets/images/banner2.png", style <| topBarImage []] [] ]
+                        ]
                     ]
                 ]
             , div
@@ -404,7 +407,18 @@ render address model =
             ++
             [ div [style <| instructionBlock model.scrollData []] [ text model.instructionText ]
             , div [style <| linkArea []]
-                [ a [ href "/index.html", target "_blank", style <| link []] [text " [ Return to Foyer ] "] ]
+                [ ul []
+                    [ li [ style <| imgList [] ] [ a [ href "/read.html", target "_blank", style <| link []] [text "Read Midnight Murder Party"] ]
+                    , li [ style <| imgList [] ] [ a [ href "credits.html", target "_blank", style <| link []] [text "Credits"] ]
+                    ]
+                ]
+
+                --[ img [ src "assets/images/pumpkin-bullet.png", style [("vertical-align", "bottom")] ] []
+                --, a [ href "/read.html", target "_blank", style <| link []] [text "Read Midnight Murder Party"]
+                --, br [] []
+                --, img [ src "assets/images/pumpkin-bullet.png", style [("vertical-align", "bottom")] ] []
+                --, a [ href "credits.html", target "_blank", style <| link []] [text "Credits"]
+                --]
             , div [style <| spacer (round <| toFloat model.windowHeight/1.4) []] []
             ]
            )

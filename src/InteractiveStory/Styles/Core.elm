@@ -50,6 +50,8 @@ topBarBanner { scrollTop, scrollHeight, clientHeight } windowWidth styles =
     |> Display.display Display.Block
     |> Margin.left ((toFloat windowWidth / 2 - 500) * (( animate (toFloat scrollTop) topBarAnimation2 )))
 
+topBarImage = Css.style "height" "100%"
+
 fixed : Styles -> Styles
 fixed styles =
     styles
@@ -84,7 +86,8 @@ instructionBlock { scrollTop } =
 
 linkArea =
     instructionBlock { scrollTop = 0 }
-    >> Position.top 30
+    >> Position.top 10
+    >> Background.color (rgba 0 0 0 0)
 
 link = Text.color (rgba 135 50 0 1)
 
@@ -115,6 +118,8 @@ choiceBlockChoice selected isActive styles =
         |> Cursor.cursor (if isActive then Cursor.Pointer else Cursor.Default)
         |> ListStyle.image "assets/images/pumpkin-bullet-2.png"
         |> bgColor
+
+imgList = ListStyle.bulletType ListStyle.None >> Text.align Text.Right >> Margin.all 0 0 0 0
 
 noPad = Padding.all 0 0 0 0
 ---- ANIMATIONS ----
