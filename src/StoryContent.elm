@@ -3,7 +3,7 @@ module StoryContent where
 import InteractiveStory.StoryBlock exposing (..)
 import InteractiveStory.Action exposing (..)
 import AnimationWrapper as AW
-import Debug
+
 import Html
 import InteractiveStory.Sound as Sound
 import InteractiveStory.VariableModel as VM
@@ -324,7 +324,7 @@ You follow the big-eyed Arlene down the street until she abruptly stops in front
   , ("Return to the elderly woman's house."
     , Just "return-to-old-lady-house"
     , Nothing
-    , Just (\vars -> not (Debug.log "done" (Dict.get "done-with-old-lady" vars.bool) == Just True) && (Debug.log "smashed" (Dict.get "smashed-pumpkin" vars.bool) == Just True))
+    , Just (\vars -> not ((Dict.get "done-with-old-lady" vars.bool) == Just True) && ((Dict.get "smashed-pumpkin" vars.bool) == Just True))
     )
   , ("Go to the house with the scarecrow out front holding a bowl of candy."
     , Just "house-with-scarecrow"
@@ -574,7 +574,7 @@ You turn around to leave, but before you get very far, you hear something growli
 "Perhaps coming here will be interesting after all!"
     """
   [ ("Turn back.", Just "pick-a-house", Nothing, Nothing)
-  , ("Investigated the growling.", Just "dark-house-back-yard", Nothing, Nothing)
+  , ("Investigate the growling.", Just "dark-house-back-yard", Nothing, Nothing)
   ] True |> label "dark-house" |> onLeave (setVars [SetBool "visited-boring-house" True])
 
 block29 = choiceBlock """

@@ -24,7 +24,6 @@ import Html.Lazy
 import Maybe
 import Signal
 
-import Debug
 import Task exposing (andThen)
 
 import Dict exposing (Dict)
@@ -257,7 +256,6 @@ handleEffectSet getEffectSet (model, effects) =
 applySounds : List Sound.SoundAction -> (Model, Effects Action) -> (Model, Effects Action)
 applySounds soundActions (model, effects) =
     soundActions
-    |> Debug.log "soundActions"
     |> List.map SoundAction
     |> Batch
     |> flip update model
@@ -267,7 +265,6 @@ applySounds soundActions (model, effects) =
 applyVariableEdits : List VarAction -> (Model, Effects Action) -> (Model, Effects Action)
 applyVariableEdits variableEdits (model, effects) =
     variableEdits
-    |> Debug.log "varEdits"
     |> List.map EditVar
     |> Batch
     |> flip update model
