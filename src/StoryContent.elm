@@ -53,7 +53,7 @@ Marc has been gone for a little while now, and Arlene has taken to staring out t
 
 bundleOfFun = """
 ### End
-Well, aren't you a bundle of fun? If you get bored while not trick or treating, perhaps you would like to refresh the page and start over... That or just [return to watching other people have fun](http://midnightmurderparty.com).
+Well, aren't you a bundle of fun? If you get bored while not trick or treating, perhaps you would like to refresh the page and start over... That or just [return to watching other people have fun](/).
 """ |> contentBlock |> label "bundle-of-fun" |> \b -> { b | next <- always Stop }
 
 block_pre_02 = """
@@ -302,7 +302,7 @@ Arlene looks up and down all three roads before turning to you. "Hmm... so many 
   |> \b -> {b | onEnter <- (\vars -> setVars [SetBool "done-with-everything" <| List.foldl (&&) True <| List.map (flip isTrue vars) ["high-schoolers-gone", "done-with-kids", "done-with-old-lady", "visited-park", "visited-creepy-music-house", "visited-house-with-scarecrow", "visited-down-road"]] vars)}
 
 block16 = """
-You go straight ahead and enter the bustle of enthusiastic trick or treaters and blaring spooky sounds. Children are running up and down the street, nimbly dodging around you as if you were no more than a lamp post or a fire hydrant. Arlene ogles at a couple well-decorated houses and screams in delight as a giant spider drops out of a tree at a group of kids as they approach a house. Then she takes off, dragging you down the road alongside her towards the source of some spooky music and witches' cackles.
+You go straight ahead and enter the bustle of enthusiastic trick or treaters. Children are running up and down the street, nimbly dodging around you as if you are no more than a lamp post or a fire hydrant. Arlene ogles at a couple well-decorated houses and screams in delight as a giant spider drops out of a tree at a group of kids as they approach a house. Then she takes off, dragging you down the road alongside her towards the source of some spooky music and witches' cackles.
 """ |> contentBlock |> label "straight-ahead"
 
 block17 = conditionalTextChoiceBlock
@@ -694,7 +694,7 @@ While trick or treating, you collected {{candy}} pieces of candy and were {{beha
 
 {{game-over-text-2}}
 
-If you want to hang out with Arlene some more, why not [head back to the Midnight Murder Party](http://midnightmurderparty.com/read.html)?
+If you want to hang out with Arlene some more, why not [head back to the Midnight Murder Party](/read.html)?
 
 Or, if you want to try again, just refresh the page.
 """
@@ -751,7 +751,7 @@ But before you get very far, a teen runs by, digs his hands into both your bag a
 block38 = """
 "Get back here you little punk!" Arlene yells, bolting down the street after him. She is surprisingly fast, and you can barely keep up. You two chase him down the block, through someone's yard, and manage to catch up with him as he rounds the corner. Arlene grabs his shoulder and yanks it back, sending the kid sprawling to the ground.
 
-"What's your problem?" The teen spits. He must be at least 17 and his expression is infuriatingly smug. Arlene looks at him like he's an idiot.
+"What's your problem?" The teen spits. He must be at least seventeen and his expression is infuriatingly smug. Arlene looks at him like he's an idiot.
 
 "What do *you* think. Drop it," she says, none too kindly.
 
@@ -798,7 +798,7 @@ block41 = conditionalTextChoiceBlock
 You head down the street to your right and walk up to the sad-looking children. They look up at you hopefully. "Have you found our candy?" the girl asks.
   """)
   , (.bool, "has-candy", True, """
-You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be conforting her little brother looks up at you mistrustfully.
+You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be comforting her little brother looks up at you mistrustfully.
 
 "What do you want? We don't have any candy left, if you're trying to steal it too."
 
@@ -813,7 +813,7 @@ Another kid, who has been quietly staring at you two in awe, speaks up. "So... t
 "Yeah, you said it!" the brown-haired girl agrees.
 """)
   , (.bool, "high-schoolers-gone", True, """
-You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be conforting her little brother looks up at you mistrustfully.
+You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be comforting her little brother looks up at you mistrustfully.
 
 "What do you want? We don't have any candy left, if you're trying to steal it too."
 
@@ -829,7 +829,7 @@ Another kid, who has been quietly staring at you two in awe, speaks up. "So... t
     """)
   ]
   """
-You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be conforting her little brother looks up at you mistrustfully.
+You approach the sniffling children and ask what's wrong. A brown-haired girl who appears to be comforting her little brother looks up at you mistrustfully.
 
 "What do you want? We don't have any candy left, if you're trying to steal it too."
 
@@ -900,7 +900,7 @@ block42 = """
 
 The quiet kid nods appreciatively but says nothing.
 
-"Our pleasure," Arlene says, smiling. She bows theatrically and hands the bags off to the kids.
+"Our pleasure," Arlene says. She bows theatrically and hands the bags off to the kids.
 
 "Here," the brown-haired girl says, extending a fistful of candy and dumping it into Arlene's bag and then dumping a handful into yours as well. "That's for being really cool!"
 
@@ -918,7 +918,7 @@ You and Arlene both offer them some of your candy, which they accept happily.
 
 The quiet kid nodes appreciatively but says nothing.
 
-"Our pleasure," Arlene says, smiling. She bows theatrically. The kids run off down the block.
+"Our pleasure," Arlene says. She bows theatrically. The kids run off down the block.
 """ |> contentBlock |> label "give-some-candy" |> goto "intersection-1" |> onLeave (setVars [SetBool "done-with-kids" True])
 
 block43 = choiceBlock """
