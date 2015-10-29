@@ -586,7 +586,7 @@ You walk around the back of the house with Arlene and follow the growling to a f
 
 block30 = conditionalTextBlock
   [(.string, "reader-costume", "godzilla", """
-Arlene hops the fence ahead of you, and you try to follow. However, since you decided to wear that ridiculously oversized Godzilla costume, you can't quite seem to make it over the fence. Eventually, Arlene gets tired of waiting and climbs back over to hoist you up. You barely clear the top of the fence and tumble over into the park. Embarassing.
+Arlene hops the fence ahead of you, and you try to follow. However, since you decided to wear that ridiculously oversized Godzilla costume, you can't quite seem to make it over the fence. Eventually, Arlene gets tired of waiting and climbs back over to hoist you up. You barely clear the top of the fence and tumble over into the park. Embarrassing.
 
 "Oh, my. Are you alright, Reader?" Arlene asks, landing nimbly beside you. She grabs your hand and helps you off the ground.
   """)]
