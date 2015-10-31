@@ -117,7 +117,7 @@ You wander around the room, knowing there is no hope of looking through *every* 
     , Just (always {emptyEffectSet | variableEdits <- [SetString "reader-costume" "knight"]})
     , Nothing
     ),
-    ("Dress as a vampire with a flowing black cape, a swauve popped collar, some slicked back hair, and a nice set of rather pointy chompers."
+    ("Dress as a vampire with a flowing black cape, a suave popped collar, some slicked back hair, and a nice set of rather pointy chompers."
     , Just "reader-costume-picked"
     , Just (always {emptyEffectSet | variableEdits <- [SetString "reader-costume" "vampire"]})
     , Nothing
@@ -385,7 +385,7 @@ You approach the house with the scarecrow. It is holding a bowl of candy in its 
 
 block19 = conditionalTextBlock [
   (.string, "scarecrow-took-candy", "two", """
-You tentatively poke your hand into the candy bowl. Your hand lands on a couple pieces of candy below the hovering zombie fingers, and you pick up two. Just as you are about convinced nothing is going to happen, the zombie hand clamps down on yours with a terrible growl from a little speaker on the side of the bowl. You snatch your hand back with your two pieces of candy while Arlene cackles with delight.
+You tentatively poke your hand into the candy bowl. Your hand lands on a couple of pieces of candy below the hovering zombie fingers, and you pick up two. Just as you are about convinced nothing is going to happen, the zombie hand clamps down on yours with a terrible growl from a little speaker on the side of the bowl. You snatch your hand back with your two pieces of candy while Arlene cackles with delight.
 
 "Goodness, you are so obedient, Reader!" she says, moving towards the bowl herself. She digs her whole hand into the bowl and giggles as the undead claw grabs and growls at her. She pulls out an entire handful of candy and dumps it into her bag. Then she goes back for a second. "They did say 'Take two'." She smiles shamelessly.
 
@@ -658,12 +658,12 @@ You look up and see a big dog in front of you, growling and baring its gigantic,
 
 block34 = conditionalTextBlock
   [ (.string, "reader-costume", "godzilla", """
-You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
+You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on you quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
 
 You two arrive at the fence to the park, and Arlene hops over no problem. You, however, forgot that you chose the most unwieldy costume ever and now realize that you can't make it over the fence. Sonny Jim pounces.
     """)
   ] """
-You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on your quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
+You and Arlene turn tail and try to escape Sonny Jim, but the big dog is fast and is gaining on you quickly, drool slobbering out of its mouth as it barks at you. Arlene laughs, screaming "Catch me if you can, puppy!" After running the Midnight Murder Party, she doesn't seem too fazed by the idea of being torn apart. You, on the other hand...
 
 You two arrive at the fence to the park and hop over. Sonny Jim is left barking at you from the other side. You return to the street.
   """
